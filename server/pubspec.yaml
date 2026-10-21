@@ -1,0 +1,20 @@
+name: sisyphus_server
+description: Scoreboard, ranking and live feed server for Sisyphusball (Pi Network).
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.6.0
+
+dependencies:
+  http: ^1.6.0
+  shelf: ^1.4.3
+  shelf_router: ^1.1.5
+  shelf_static: ^1.2.0
+  shelf_web_socket: ^3.0.0
+  sisyphus_core:
+    path: ../packages/sisyphus_core
+  web_socket_channel: ^3.0.3
+dev_dependencies:
+  lints: ^6.1.0
+  test: ^1.33.0
