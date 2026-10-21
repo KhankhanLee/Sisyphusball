@@ -1,32 +1,30 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:shelf/shelf_io.dart' as io;
-import 'package:sisyphus_server/app.dart';
-import 'package:sisyphus_server/pi_verifier.dart';
-import 'package:sisyphus_server/store.dart';
+import 'package:sisyphus_server/sisyphus_server.dart';
 import 'package:test/test.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 void main() {
   late HttpServer server;
   late SisyphusServer app;
-  late Store store;
   late Uri base;
 
-  Future<PiUser> fakeVerify(String token) async {
-    if (token == 'good-token-alice') return const PiUser('pi:alice', 'alice');
-    if (token == 'good-token-bob00') return const PiUser('pi:bob', 'bob');
+  Future<Identity> fakeVerify(String token) async {
+    if (token == 'good-token-alice') return const Identity(uid: 'pi:alice', username: 'alice');
+    if (token == 'good-token-bob00') return const Identity(uid: 'pi:bob', username: 'bob');
     throw StateError('bad token');
   }
 
   setUp(() async {
-    store = Store(null);
     app = SisyphusServer(
-      store: store,
-      config: const ServerConfig(allowGuest: true),
+      config: const ServerConfig(allowGuests: true),
+      repository: InMemoryScoreRepository(),
       verifyPiToken: fakeVerify,
+      log: IOSink(StreamController<List<int>>().sink),
     );
     server = await io.serve(app.handler, InternetAddress.loopbackIPv4, 0);
     base = Uri.parse('http://127.0.0.1:${server.port}');
@@ -59,13 +57,15 @@ void main() {
     final (ok, body) = await call('POST', '/api/auth', body: {'accessToken': 'good-token-alice'});
     expect(ok, 200);
     expect(body['user']['username'], 'alice');
-    expect(body['standing']['tier'], '바닥의 조약돌');
+    expect(body['standing']['tier'], 'Pebble at the Bottom');
   });
 
-  test('guests are sanitized and can be disabled', () async {
-    final (_, body) = await call('POST', '/api/auth', body: {'guest': true, 'name': '<b>시지프</b>!!'});
-    expect(body['user']['username'], 'b시지프b');
+  test('guest names are sanitized', () async {
+    final (_, body) = await call('POST', '/api/auth', body: {'guest': true, 'name': '<b>Sisyphus</b>!!'});
+    expect(body['user']['username'], 'bSisyphusb');
     expect(body['user']['guest'], true);
+    final (_, unnamed) = await call('POST', '/api/auth', body: {'guest': true, 'name': ''});
+    expect(unnamed['user']['username'], startsWith('Guest'));
   });
 
   test('runs require a session', () async {
@@ -135,15 +135,18 @@ void main() {
     await ws.sink.close();
   });
 
-  test('store persists across restarts', () async {
+  test('repository persists across restarts', () async {
     final dir = await Directory.systemTemp.createTemp('sisyphus');
-    final file = '${dir.path}/scores.json';
-    final s1 = Store(file)..recordRun(uid: 'u1', username: 'one', score: 7);
-    await s1.flush();
-    final s2 = Store(file);
-    await s2.load();
-    expect(s2.player('u1')!.best, 7);
-    expect(s2.stats()['totalRuns'], 1);
+    final path = '${dir.path}/scores.json';
+    final first = JsonFileScoreRepository(path);
+    final service = ScoreService(first);
+    service.record(const Identity(uid: 'u1', username: 'one'), 7);
+    await first.flush();
+
+    final second = JsonFileScoreRepository(path);
+    await second.load();
+    expect(second.find('u1')!.best, 7);
+    expect(second.totals.runs, 1);
     await dir.delete(recursive: true);
   });
 }

@@ -77,9 +77,9 @@ void main() {
   });
 
   test('tiers', () {
-    expect(tierFor(0).name, '바닥의 조약돌');
+    expect(tierFor(0).name, 'Pebble at the Bottom');
     expect(tierFor(99).min, 50);
-    expect(tierFor(100000).name, '행복한 시지프');
+    expect(tierFor(100000).name, 'Happy Sisyphus');
     expect(nextTier(0)!.min, 10);
     expect(nextTier(800), isNull);
   });
