@@ -1,0 +1,13 @@
+# Dart / Flutter
+.dart_tool/
+build/
+.packages
+.flutter-plugins
+.flutter-plugins-dependencies
+*.iml
+.idea/
+
+# runtime data
+data/
+.env
+*.log

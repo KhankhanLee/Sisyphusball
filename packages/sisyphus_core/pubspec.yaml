@@ -1,0 +1,11 @@
+name: sisyphus_core
+description: Pure game logic and ranking tiers shared by the Sisyphusball app and server.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.6.0
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.25.0
