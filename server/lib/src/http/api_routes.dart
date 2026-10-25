@@ -10,6 +10,7 @@ import '../live/observers.dart';
 import '../runs/run_registry.dart';
 import '../scores/score_service.dart';
 import 'http_error.dart';
+import 'legal_pages.dart';
 import 'middleware.dart';
 
 /// Thin HTTP controllers: parse the request, call a service, render JSON.
@@ -22,13 +23,16 @@ import 'middleware.dart';
 ///   POST /api/runs/{id}/progress   (bearer) {height}
 ///   POST /api/runs/{id}/finish     (bearer) {score}
 ///   GET  /ws                       live feed: {"type":"board"|"live", ...}
+///   GET  /privacy, /terms          legal pages for the Pi Developer Portal
 class ApiRoutes {
-  ApiRoutes({required this.config, required this.auth, required this.scores, required this.runs});
+  ApiRoutes({required this.config, required this.auth, required this.scores, required this.runs})
+      : legal = LegalPages(directory: config.legalDir, contactEmail: config.contactEmail);
 
   final ServerConfig config;
   final AuthService auth;
   final ScoreService scores;
   final RunRegistry runs;
+  final LegalPages legal;
 
   Router get router => Router()
     ..get('/api/config', _config)
@@ -40,6 +44,8 @@ class ApiRoutes {
     ..post('/api/runs/<id>/finish', _finish)
     ..get('/ws', webSocketHandler(_onSocket))
     ..get('/validation-key.txt', _validationKey)
+    ..get('/privacy', (Request _) => legal.render('privacy'))
+    ..get('/terms', (Request _) => legal.render('terms'))
     ..all('/api/<rest|.*>', (Request _) => throw HttpError(404, 'not found'));
 
   Response _config(Request _) =>

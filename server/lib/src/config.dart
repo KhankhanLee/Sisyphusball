@@ -7,6 +7,8 @@ class ServerConfig {
     this.allowGuests = true,
     this.seed = defaultSeed,
     this.validationKey = '',
+    this.contactEmail = '',
+    this.legalDir = 'legal',
     this.leaderboardSize = 50,
     this.piApiBase = 'https://api.minepi.com',
     this.dataFile,
@@ -28,6 +30,8 @@ class ServerConfig {
       allowGuests: flag('ALLOW_GUEST', !production),
       seed: int.tryParse(env['MOUNTAIN_SEED'] ?? '') ?? defaultSeed,
       validationKey: env['PI_VALIDATION_KEY'] ?? '',
+      contactEmail: env['CONTACT_EMAIL'] ?? '',
+      legalDir: env['LEGAL_DIR'] ?? 'legal',
       piApiBase: env['PI_API_BASE'] ?? 'https://api.minepi.com',
       dataFile: env['DATA_FILE'] ?? 'data/scores.json',
       webDir: env['WEB_DIR'] ?? '../app/build/web',
@@ -41,6 +45,12 @@ class ServerConfig {
 
   /// Served at /validation-key.txt for the Pi Developer Portal domain check.
   final String validationKey;
+
+  /// Shown on the Privacy Policy and Terms pages.
+  final String contactEmail;
+
+  /// Where privacy.html and terms.html live.
+  final String legalDir;
   final int leaderboardSize;
   final String piApiBase;
 

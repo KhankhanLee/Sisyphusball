@@ -135,6 +135,14 @@ void main() {
     await ws.sink.close();
   });
 
+  test('legal pages are reachable over HTTP for the Pi Developer Portal', () async {
+    for (final path in ['/privacy', '/terms']) {
+      final res = await http.get(base.resolve(path));
+      expect(res.statusCode, 200, reason: path);
+      expect(res.headers['content-type'], startsWith('text/html'));
+    }
+  });
+
   test('repository persists across restarts', () async {
     final dir = await Directory.systemTemp.createTemp('sisyphus');
     final path = '${dir.path}/scores.json';

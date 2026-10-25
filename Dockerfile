@@ -18,8 +18,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
     && rm -rf /var/lib/apt/lists/*
 COPY --from=server /out/server /app/server
 COPY --from=web /src/app/build/web /app/web
+COPY --from=server /src/server/legal /app/legal
 ENV APP_ENV=production \
     WEB_DIR=/app/web \
+    LEGAL_DIR=/app/legal \
     DATA_FILE=/data/scores.json \
     PORT=8080
 VOLUME /data

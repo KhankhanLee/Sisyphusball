@@ -144,17 +144,67 @@ flutter run -d chrome --dart-define=API_BASE=http://localhost:8080
 
 ## Pi Network에 올리기
 
-1. Pi Browser에서 `develop.pi`(Pi Developer Portal)를 열고 새 앱을 등록합니다.
-2. 이 서버를 HTTPS가 되는 곳에 배포합니다. Dockerfile이 들어 있습니다.
+### 1. 개발 중: Sandbox (Development URL)
+
+1. PC에서 웹 빌드 후 서버를 띄웁니다 (`로컬 실행` 참고). 기본값이 sandbox 모드입니다.
+2. 포털 **Domain → Your App's development URL**에 `http://localhost:8080`을 넣습니다.
+3. **Run in Sandbox**로 열고, 처음 한 번은 폰 Pi Browser로 sandbox 인증을 합니다.
+
+### 2. 배포: Fly.io (Production App URL)
+
+저장소 루트의 `fly.toml`과 `Dockerfile`로 배포합니다. 서버 하나가 게임(Flutter 웹 빌드), API, `/privacy`, `/terms`를 모두 제공합니다.
+
+```bash
+# 0) flyctl 설치 후 로그인
+curl -L https://fly.io/install.sh | sh
+fly auth login
+
+# 1) 앱 만들기 — 이름은 Fly 전체에서 유일해야 하므로 겹치면 fly.toml의 app 값도 같이 바꿉니다
+fly apps create sisyphusball-testnet
+
+# 2) 랭킹 파일을 보관할 볼륨 (1GB면 충분)
+fly volumes create sisyphus_data --region nrt --size 1
+
+# 3) Privacy/Terms에 표시할 연락처
+fly secrets set CONTACT_EMAIL=you@example.com
+
+# 4) 배포 → https://sisyphusball-testnet.fly.dev
+fly deploy
+fly scale count 1   # 세션·실시간 피드가 메모리에 있으므로 머신은 꼭 1대
+```
+
+배포 후 포털에서:
+
+| 포털 항목 | 넣을 값 |
+| --- | --- |
+| Domain → Your App's URL | `https://sisyphusball-testnet.fly.dev` |
+| Privacy / TOS | `https://sisyphusball-testnet.fly.dev/privacy`, `https://sisyphusball-testnet.fly.dev/terms` |
+
+도메인 검증:
+1. 포털이 보여 주는 validation key를 서버에 넣습니다. secrets를 바꾸면 Fly가 서버를 자동으로 다시 띄웁니다.
    ```bash
-   docker build -t sisyphusball .
-   docker run -p 8080:8080 -v sisyphus-data:/data \
-     -e PI_VALIDATION_KEY=<포털에서 받은 키> sisyphusball
+   fly secrets set PI_VALIDATION_KEY=<포털에서 받은 키>
    ```
-3. 포털의 **App URL**에 배포한 주소를 넣고, 도메인 검증을 실행합니다.
-   서버가 `/validation-key.txt`에서 `PI_VALIDATION_KEY` 값을 돌려줍니다.
-4. 샌드박스에서 먼저 확인합니다: 서버를 `PI_SANDBOX=true`로 띄우고, 포털에 표시되는 sandbox URL로 접속합니다.
-5. 메인넷 공개 시 `PI_SANDBOX=false`(production 기본값)로 실행합니다.
+2. `https://sisyphusball-testnet.fly.dev/validation-key.txt`에 키가 보이는지 확인하고 포털에서 Verify를 누릅니다.
+
+참고:
+- `fly.toml`이 `APP_ENV=production`을 설정하므로 sandbox와 Guest 플레이는 꺼지고, Pi 계정으로만 플레이합니다.
+- 주소 하나는 Pi 앱 하나에만 검증됩니다. 나중에 Mainnet 앱은 **별도 Fly 앱**으로 만드세요.
+  ```bash
+  fly apps create sisyphusball
+  fly volumes create sisyphus_data --region nrt --size 1 -a sisyphusball
+  fly secrets set CONTACT_EMAIL=you@example.com -a sisyphusball
+  fly deploy -a sisyphusball && fly scale count 1 -a sisyphusball
+  ```
+- 내 도메인을 쓰려면 `fly certs add testnet.내도메인.com` 후 DNS에 안내된 레코드를 추가합니다.
+- Fly.io는 사용량 기준 과금입니다. 작은 머신 1대와 1GB 볼륨이면 비용은 적지만, 정확한 금액은 Fly 요금 페이지에서 확인하세요.
+- 로그 확인: `fly logs` (개인 최고 기록이 나오면 `[best] ...` 줄이 찍힙니다).
+
+### Privacy Policy / Terms of Service
+
+`server/legal/privacy.html`, `server/legal/terms.html`이 원본이고, 서버가 `/privacy`, `/terms`에서 제공합니다.
+`{{contact}}` 자리는 `CONTACT_EMAIL` 값으로 채워지고, 비워 두면 Pi Browser의 앱 페이지로 연락하라는 문장이 들어갑니다.
+수집하는 데이터(Pi 사용자명·ID, Guest 이름, 점수, 플레이 중 높이)가 바뀌면 이 두 파일도 함께 고쳐야 합니다.
 
 ### 환경 변수 (server)
 
@@ -169,6 +219,8 @@ flutter run -d chrome --dart-define=API_BASE=http://localhost:8080
 | `MOUNTAIN_SEED` | `333077` | 산 모양 시드. 바꾸면 모두에게 새로운 산이 됩니다 |
 | `DATA_FILE` | `data/scores.json` | 랭킹 저장 파일 |
 | `WEB_DIR` | `../app/build/web` | 서빙할 Flutter 웹 빌드 경로 |
+| `CONTACT_EMAIL` | (없음) | Privacy/Terms 페이지의 연락처 |
+| `LEGAL_DIR` | `legal` | `privacy.html`, `terms.html`이 있는 폴더 |
 
 ## API
 
@@ -182,3 +234,5 @@ flutter run -d chrome --dart-define=API_BASE=http://localhost:8080
 | POST | `/api/runs/{id}/progress` | `{height}` 1초마다 — 실시간 "지금 밀고 있는 사람들"에 반영 |
 | POST | `/api/runs/{id}/finish` | `{score}` → `{isBest, standing, stats}` |
 | WS | `/ws` | 서버 → 클라이언트: `{"type":"board",...}`, `{"type":"live",...}` |
+| GET | `/privacy`, `/terms` | Privacy Policy, Terms of Service (HTML) |
+| GET | `/validation-key.txt` | Pi 도메인 검증 키 |
