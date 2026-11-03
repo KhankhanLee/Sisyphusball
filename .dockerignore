@@ -1,4 +1,7 @@
 **/.dart_tool
 **/build
-**/data
+# runtime data only — never app/lib/data, which is source code
+server/data
+deploy/azure/data
+data
 .git
