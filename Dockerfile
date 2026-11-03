@@ -10,7 +10,7 @@ FROM dart:stable AS server
 WORKDIR /src
 COPY packages packages
 COPY server server
-RUN cd server && dart pub get && dart compile exe bin/server.dart -o /out/server
+RUN mkdir -p /out && cd server && dart pub get && dart compile exe bin/server.dart -o /out/server
 
 # 3) Runtime
 FROM debian:bookworm-slim
