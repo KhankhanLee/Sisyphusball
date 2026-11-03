@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Sisyphusball app icon: a mountain whose summit dissolves into the dark
+       (there is no summit) and a stone being pushed up its slope. -->
+  <defs>
+    <radialGradient id="sky" cx="50%" cy="38%" r="70%">
+      <stop offset="0" stop-color="#2E2542"/>
+      <stop offset="1" stop-color="#14111C"/>
+    </radialGradient>
+    <linearGradient id="far" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0.05" stop-color="#2B2340" stop-opacity="0"/>
+      <stop offset="0.55" stop-color="#2B2340"/>
+    </linearGradient>
+    <linearGradient id="near" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#4A3B5C" stop-opacity="0"/>
+      <stop offset="0.38" stop-color="#4A3B5C"/>
+      <stop offset="1" stop-color="#3A2F48"/>
+    </linearGradient>
+    <linearGradient id="veil" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#14111C"/>
+      <stop offset="0.16" stop-color="#14111C" stop-opacity="0.92"/>
+      <stop offset="0.42" stop-color="#14111C" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="stone" cx="38%" cy="34%" r="70%">
+      <stop offset="0" stop-color="#EADBC2"/>
+      <stop offset="1" stop-color="#9A876E"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#sky)"/>
+  <!-- distant ridge -->
+  <path d="M-20 470 L330 60 L540 380 L540 512 L-20 512 Z" fill="url(#far)"/>
+  <!-- the mountain; its peak fades out -->
+  <path d="M20 512 L276 40 L532 512 Z" fill="url(#near)"/>
+  <!-- darkness swallows the top: there is no summit -->
+  <rect width="512" height="512" fill="url(#veil)"/>
+  <g transform="translate(30 -6)">
+  <!-- Sisyphus, braced on the slope -->
+  <g stroke="#EFE6D8" stroke-width="9" stroke-linecap="round" fill="none">
+    <path d="M118 360 L152 318"/>          <!-- torso -->
+    <path d="M140 333 L172 300"/>          <!-- arm to stone -->
+    <path d="M134 340 L170 318"/>          <!-- arm -->
+    <path d="M118 360 L96 398"/>           <!-- back leg -->
+    <path d="M118 360 L130 402"/>          <!-- front leg -->
+  </g>
+  <circle cx="156" cy="304" r="12" fill="#EFE6D8"/>
+  <!-- the stone -->
+  <circle cx="206" cy="262" r="52" fill="url(#stone)"/>
+  <g fill="none" stroke="#5C4C3A" stroke-opacity="0.45" stroke-width="5">
+    <circle cx="190" cy="246" r="9"/>
+    <circle cx="224" cy="270" r="8"/>
+    <circle cx="198" cy="286" r="6"/>
+  </g>
+  </g>
+</svg>

@@ -76,6 +76,10 @@ void main() {
     expect(c.figureY, greaterThan(0), reason: 'Sisyphus stays where it slipped');
   });
 
+  test('a careful player gets through the warm-up on the real mountain', () {
+    expect(cautiousBotScore(Mountain()), greaterThanOrEqualTo(warmUpHeight));
+  });
+
   test('tiers', () {
     expect(tierFor(0).name, 'Pebble at the Bottom');
     expect(tierFor(99).min, 50);
@@ -98,4 +102,24 @@ class _WallMountain extends Mountain {
 
   @override
   void ensure(double height) {}
+}
+
+/// A cautious player: pushes only while the rocks just above stay clear of
+/// the stone for the next [look] seconds, otherwise lets it slide.
+int cautiousBotScore(Mountain m, {double look = 0.5, double maxSeconds = 600}) {
+  final c = Climber(m);
+  var elapsed = 0.0;
+  while (c.state == ClimbState.climbing && elapsed < maxSeconds) {
+    var clear = true;
+    for (final rock in m.inRange(c.y, c.y + 3)) {
+      for (var k = 0; k <= 10 && clear; k++) {
+        final dt = look * k / 10;
+        final y = (c.y + c.v * dt + 0.5 * Phys.pushAcc * dt * dt).clamp(c.y, c.y + Phys.maxUp * dt);
+        if (rock.hits(c.t + dt, y)) clear = false;
+      }
+    }
+    c.step(1 / 60, pushing: clear);
+    elapsed += 1 / 60;
+  }
+  return c.score;
 }

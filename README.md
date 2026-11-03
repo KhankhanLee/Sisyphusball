@@ -47,6 +47,10 @@ app/lib/
   models/                    PlayerModel · LeaderboardModel · PresenceModel · ScreenModel · SceneOverlayModel
   ui/                        theme · widgets · screens
   pi/                        Pi SDK 브리지 (웹: js_interop, 그 외: stub)
+server/legal/                Privacy Policy · Terms of Service 템플릿
+deploy/azure/                Azure VM 배포 (docker compose + Caddy 자동 HTTPS) · 가이드
+design/                      앱 아이콘 원본 (icon.svg, Pi 포털용 icon-512.png)
+.github/workflows/ci.yml     테스트 + Docker 이미지 빌드/배포
 server/lib/
   sisyphus_server.dart       Composition root (SisyphusServer)
   src/events.dart            sealed ServerEvent
@@ -150,55 +154,28 @@ flutter run -d chrome --dart-define=API_BASE=http://localhost:8080
 2. 포털 **Domain → Your App's development URL**에 `http://localhost:8080`을 넣습니다.
 3. **Run in Sandbox**로 열고, 처음 한 번은 폰 Pi Browser로 sandbox 인증을 합니다.
 
-### 2. 배포: Fly.io (Production App URL)
+### 2. 배포 (Production App URL)
 
-저장소 루트의 `fly.toml`과 `Dockerfile`로 배포합니다. 서버 하나가 게임(Flutter 웹 빌드), API, `/privacy`, `/terms`를 모두 제공합니다.
+`main`에 머지되면 GitHub Actions(`.github/workflows/ci.yml`)가 테스트를 돌리고, Docker 이미지를
+`ghcr.io/khankhanlee/sisyphusball:latest`로 올립니다. 서버는 이 이미지를 받아서 실행만 합니다.
+
+| 방법 | 비용 | 가이드 |
+| --- | --- | --- |
+| **Azure for Students** (기본) | 학생 무료: $100 크레딧 + B1s/B2ats v2 VM 12개월 무료 | [`deploy/azure/README.md`](deploy/azure/README.md) |
+| Fly.io (대안) | 월 약 $3 | 아래 |
+
+#### Fly.io (대안)
+
+저장소 루트의 `fly.toml`과 `Dockerfile`로 배포합니다.
 
 ```bash
-# 0) flyctl 설치 후 로그인
-curl -L https://fly.io/install.sh | sh
 fly auth login
-
-# 1) 앱 만들기 — 이름은 Fly 전체에서 유일해야 하므로 겹치면 fly.toml의 app 값도 같이 바꿉니다
-fly apps create sisyphusball-testnet
-
-# 2) 랭킹 파일을 보관할 볼륨 (1GB면 충분)
+fly apps create sisyphusball-testnet          # 이름이 겹치면 fly.toml의 app도 변경
 fly volumes create sisyphus_data --region nrt --size 1
-
-# 3) Privacy/Terms에 표시할 연락처
-fly secrets set CONTACT_EMAIL=you@example.com
-
-# 4) 배포 → https://sisyphusball-testnet.fly.dev
-fly deploy
-fly scale count 1   # 세션·실시간 피드가 메모리에 있으므로 머신은 꼭 1대
+fly secrets set CONTACT_EMAIL=hajinchoi139@gmail.com
+fly deploy && fly scale count 1                # 세션·실시간 피드가 메모리에 있으므로 1대
+fly secrets set PI_VALIDATION_KEY=<포털에서 받은 키>
 ```
-
-배포 후 포털에서:
-
-| 포털 항목 | 넣을 값 |
-| --- | --- |
-| Domain → Your App's URL | `https://sisyphusball-testnet.fly.dev` |
-| Privacy / TOS | `https://sisyphusball-testnet.fly.dev/privacy`, `https://sisyphusball-testnet.fly.dev/terms` |
-
-도메인 검증:
-1. 포털이 보여 주는 validation key를 서버에 넣습니다. secrets를 바꾸면 Fly가 서버를 자동으로 다시 띄웁니다.
-   ```bash
-   fly secrets set PI_VALIDATION_KEY=<포털에서 받은 키>
-   ```
-2. `https://sisyphusball-testnet.fly.dev/validation-key.txt`에 키가 보이는지 확인하고 포털에서 Verify를 누릅니다.
-
-참고:
-- `fly.toml`이 `APP_ENV=production`을 설정하므로 sandbox와 Guest 플레이는 꺼지고, Pi 계정으로만 플레이합니다.
-- 주소 하나는 Pi 앱 하나에만 검증됩니다. 나중에 Mainnet 앱은 **별도 Fly 앱**으로 만드세요.
-  ```bash
-  fly apps create sisyphusball
-  fly volumes create sisyphus_data --region nrt --size 1 -a sisyphusball
-  fly secrets set CONTACT_EMAIL=you@example.com -a sisyphusball
-  fly deploy -a sisyphusball && fly scale count 1 -a sisyphusball
-  ```
-- 내 도메인을 쓰려면 `fly certs add testnet.내도메인.com` 후 DNS에 안내된 레코드를 추가합니다.
-- Fly.io는 사용량 기준 과금입니다. 작은 머신 1대와 1GB 볼륨이면 비용은 적지만, 정확한 금액은 Fly 요금 페이지에서 확인하세요.
-- 로그 확인: `fly logs` (개인 최고 기록이 나오면 `[best] ...` 줄이 찍힙니다).
 
 ### Privacy Policy / Terms of Service
 

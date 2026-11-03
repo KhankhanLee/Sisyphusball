@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'app_services.dart';
 import 'copy.dart';
+import 'data/api_client.dart';
 import 'game/game_controller.dart';
 import 'game/game_view.dart';
 import 'models/screen_model.dart';
@@ -55,6 +57,8 @@ class _GameShellState extends State<GameShell> {
 
   void _play(GameMode mode) => s.game.start(mode);
 
+  void _openPage(String path) => launchUrl(serverBase.resolve(path)).ignore();
+
   void _home() {
     s.game.start(GameMode.idle);
     s.screens.showTitle();
@@ -80,6 +84,7 @@ class _GameShellState extends State<GameShell> {
             onSolo: () => _play(GameMode.solo),
             onVersus: () => _play(GameMode.versus),
             onHallOfFame: s.screens.openHallOfFame,
+            onOpenPage: _openPage,
           ),
         Screen.solo => SoloHud(game: s.game, player: s.player, presence: s.presence),
         Screen.versus => VersusHud(game: s.game),

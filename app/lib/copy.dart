@@ -12,6 +12,8 @@ abstract final class Copy {
   static const playVersus = 'Push Together';
   static const playVersusHint = '2P · one device';
   static const hallOfFame = 'Hall of Fame';
+  static const privacy = 'Privacy';
+  static const terms = 'Terms';
   static const howTo = 'Hold to push the stone up. Let go and it rolls back down.\n'
       'Touch a sweeping rock and it tumbles all the way to the bottom.\n'
       '1 m = 1 point.';

@@ -51,12 +51,21 @@ class InMemoryScoreRepository implements ScoreRepository {
 ///
 /// Writes are debounced and chained one after another, and each goes to a
 /// temp file that is then renamed into place — overlapping saves can never
-/// leave a half-written file behind.
+/// leave a half-written file behind. Once a day the file is also copied to
+/// `backups/scores-YYYY-MM-DD.json` next to it; the newest [backupsToKeep]
+/// copies are kept (0 turns backups off).
 class JsonFileScoreRepository extends InMemoryScoreRepository {
-  JsonFileScoreRepository(this.path, {this.debounce = const Duration(milliseconds: 300)});
+  JsonFileScoreRepository(
+    this.path, {
+    this.debounce = const Duration(milliseconds: 300),
+    this.backupsToKeep = 14,
+    DateTime Function()? clock,
+  }) : _clock = clock ?? DateTime.now;
 
   final String path;
   final Duration debounce;
+  final int backupsToKeep;
+  final DateTime Function() _clock;
   Timer? _pending;
   Future<void> _writing = Future.value();
 
@@ -108,5 +117,27 @@ class JsonFileScoreRepository extends InMemoryScoreRepository {
       'totalMeters': totals.meters,
     }));
     await tmp.rename(path);
+    if (backupsToKeep > 0) await _backUpOncePerDay(file);
+  }
+
+  Directory get backupDir => Directory('${File(path).parent.path}/backups');
+
+  Future<void> _backUpOncePerDay(File current) async {
+    final today = _clock().toUtc().toIso8601String().substring(0, 10);
+    final copy = File('${backupDir.path}/scores-$today.json');
+    if (await copy.exists()) return;
+    await backupDir.create(recursive: true);
+    await current.copy(copy.path);
+
+    // File names sort by date, so everything before the newest N goes.
+    final all = await backupDir
+        .list()
+        .where((e) => e is File && RegExp(r'scores-\d{4}-\d{2}-\d{2}\.json$').hasMatch(e.path))
+        .map((e) => e.path)
+        .toList()
+      ..sort();
+    for (final old in all.take(all.length - backupsToKeep).toList()) {
+      await File(old).delete();
+    }
   }
 }

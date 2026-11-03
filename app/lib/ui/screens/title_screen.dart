@@ -15,11 +15,15 @@ class TitleScreen extends StatelessWidget {
     required this.onSolo,
     required this.onVersus,
     required this.onHallOfFame,
+    required this.onOpenPage,
   });
 
   final PlayerModel player;
   final LeaderboardModel leaderboard;
   final VoidCallback onSolo, onVersus, onHallOfFame;
+
+  /// Opens a server page such as `privacy` or `terms`.
+  final void Function(String path) onOpenPage;
 
   String get _whoAmI => switch (player.status) {
         SignInStatus.pending => Copy.checkingAccount,
@@ -53,6 +57,26 @@ class TitleScreen extends StatelessWidget {
           style: const TextStyle(fontSize: 12, color: Palette.accent, height: 1.5),
         ),
       ],
+      const SizedBox(height: 6),
+      Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+        _FooterLink(Copy.privacy, () => onOpenPage('privacy')),
+        const Text('·', style: TextStyles.small),
+        _FooterLink(Copy.terms, () => onOpenPage('terms')),
+      ]),
     ]);
   }
+}
+
+class _FooterLink extends StatelessWidget {
+  const _FooterLink(this.label, this.onTap);
+
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => TextButton(
+        onPressed: onTap,
+        style: TextButton.styleFrom(foregroundColor: Palette.muted, textStyle: const TextStyle(fontSize: 12)),
+        child: Text(label),
+      );
 }

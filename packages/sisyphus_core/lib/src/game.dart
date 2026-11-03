@@ -25,7 +25,10 @@ const double maxPointsPerSecond = Phys.maxUp;
 const double laneWidth = 9; // width of the mountain path (m)
 const double ballRadius = 0.45; // stone radius (m)
 const double rockThickness = 0.7; // vertical size of a sweeping rock (m)
-const double safeBase = 4; // the first meters never have rocks
+const double safeBase = 6; // the first meters never have rocks
+
+/// Rocks are gentler (narrower, slower, further apart) until this height.
+const double warmUpHeight = 60;
 
 const int defaultSeed = 0x51515;
 
@@ -97,14 +100,15 @@ class Mountain {
   void _generate() {
     final y = _top;
     final difficulty = (y / 120).clamp(0.0, 1.8);
+    final ease = (y / warmUpHeight).clamp(0.0, 1.0); // 0 at the foot, 1 once warmed up
     rocks.add(Rock(
       y: y,
-      width: 0.22 + _rng.next() * 0.18,
-      speed: (0.22 + _rng.next() * 0.2) * (1 + difficulty),
+      width: 0.16 + 0.06 * ease + _rng.next() * (0.12 + 0.06 * ease),
+      speed: (0.18 + 0.04 * ease + _rng.next() * (0.12 + 0.08 * ease)) * (1 + difficulty),
       phase: _rng.next() * 2,
       dir: _rng.next() < 0.5 ? 1 : -1,
     ));
-    _top += (5.5 - y / 80).clamp(2.2, 5.5) + _rng.next() * 2.5;
+    _top += (5.5 - y / 80).clamp(2.2, 5.5) + (1 - ease) * 1.5 + _rng.next() * 2.5;
   }
 
   /// Rocks whose height lies in [lo, hi].
