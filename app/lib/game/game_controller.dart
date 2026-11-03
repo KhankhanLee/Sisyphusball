@@ -3,12 +3,16 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:sisyphus_core/sisyphus_core.dart';
 
-enum GameMode { idle, solo, versus }
+import '../events.dart';
+import 'scene.dart';
 
+export 'scene.dart' show GameMode;
+
+/// A floating "+1" next to the stone.
 class Popup {
-  Popup(this.y);
+  Popup(this.height);
 
-  final double y;
+  final double height;
   double age = 0;
 }
 
@@ -17,84 +21,80 @@ class Lane {
   Lane(Mountain mountain) : climber = Climber(mountain);
 
   final Climber climber;
-  double camY = 0;
+  double cameraY = 0;
   bool pushing = false;
   final popups = <Popup>[];
 }
 
-/// Another player climbing right now, reported by the live feed.
-class Ghost {
-  const Ghost(this.name, this.height);
-
-  final String name;
-  final double height;
-}
-
-/// A horizontal dashed line: a goal that moves nothing.
-class Marker {
-  const Marker(this.y, this.label, this.color);
-
-  final double y;
-  final String label;
-  final int color;
-}
-
-/// Owns the simulation. [GameView] drives [tick] from a Ticker and the
-/// painter repaints whenever this notifies.
-class GameController extends ChangeNotifier {
-  GameController() {
-    _setup(GameMode.idle, defaultSeed);
+/// Owns the simulation; [GameView] drives [tick] from a Ticker.
+///
+/// Two kinds of observers:
+///  * as a [Subject] it announces game moments ([RunStarted], [StoneCrashed],
+///    [RunEnded]) to the app's services and models;
+///  * as a [ChangeNotifier] it tells the painter to redraw every frame.
+class GameController extends ChangeNotifier with Subject<AppEvent> {
+  GameController({this.seed = defaultSeed}) {
+    _setUp(GameMode.idle);
   }
 
+  int seed;
   GameMode mode = GameMode.idle;
   late Mountain mountain;
   List<Lane> lanes = [];
-  List<Ghost> ghosts = const [];
-  List<Marker> markers = const [];
 
-  void Function(int lane)? onCrash;
-  void Function(List<int> scores)? onAllOver;
+  /// Height of the first stone; what a solo run reports to the server.
+  double get height => lanes.first.climber.y;
 
-  void start(GameMode m, int seed) {
-    _setup(m, seed);
+  void start(GameMode newMode) {
+    _setUp(newMode);
+    if (newMode != GameMode.idle) notify(RunStarted(newMode));
     notifyListeners();
   }
 
-  void _setup(GameMode m, int seed) {
-    mode = m;
-    mountain = Mountain(seed);
-    lanes = [for (var i = 0; i < (m == GameMode.versus ? 2 : 1); i++) Lane(mountain)];
-  }
-
-  void setPushing(int lane, bool value) {
-    if (lane < lanes.length) lanes[lane].pushing = value;
+  void setPushing(int lane, bool pushing) {
+    if (lane < lanes.length) lanes[lane].pushing = pushing;
   }
 
   void tick(double dt) {
     dt = min(dt, 0.05); // a backgrounded tab must not teleport the stone
-    var allOver = mode != GameMode.idle;
+    final playing = mode != GameMode.idle;
+    var allDown = playing;
     for (final (i, lane) in lanes.indexed) {
       final c = lane.climber;
-      final ev = c.step(dt, pushing: mode != GameMode.idle && lane.pushing);
+      final ev = c.step(dt, pushing: playing && lane.pushing);
       for (var k = 0; k < ev.gained; k++) {
         lane.popups.add(Popup(c.score.toDouble()));
       }
-      if (ev.crashed) onCrash?.call(i);
-      allOver &= c.state == ClimbState.over;
-
-      // the camera follows, faster while the stone tumbles down
-      final follow = c.state == ClimbState.falling ? 10.0 : 5.0;
-      lane.camY += (c.y - lane.camY) * min(1, dt * follow);
-      for (final p in lane.popups) {
-        p.age += dt;
-      }
-      lane.popups.removeWhere((p) => p.age >= 1);
+      if (ev.crashed) notify(StoneCrashed(i, c.score));
+      allDown &= c.state == ClimbState.over;
+      _followCamera(lane, dt);
+      _agePopups(lane, dt);
     }
-    if (allOver) {
-      final scores = [for (final l in lanes) l.climber.score];
+    if (allDown) {
+      final ended = mode;
       mode = GameMode.idle;
-      onAllOver?.call(scores);
+      notify(RunEnded(ended, [for (final l in lanes) l.climber.score]));
     }
     notifyListeners();
+  }
+
+  void _setUp(GameMode newMode) {
+    mode = newMode;
+    mountain = Mountain(seed);
+    lanes = [for (var i = 0; i < (newMode == GameMode.versus ? 2 : 1); i++) Lane(mountain)];
+  }
+
+  // The camera follows the stone, faster while it tumbles down.
+  static void _followCamera(Lane lane, double dt) {
+    final c = lane.climber;
+    final speed = c.state == ClimbState.falling ? 10.0 : 5.0;
+    lane.cameraY += (c.y - lane.cameraY) * min(1, dt * speed);
+  }
+
+  static void _agePopups(Lane lane, double dt) {
+    for (final p in lane.popups) {
+      p.age += dt;
+    }
+    lane.popups.removeWhere((p) => p.age >= 1);
   }
 }

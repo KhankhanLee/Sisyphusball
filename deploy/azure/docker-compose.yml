@@ -1,0 +1,33 @@
+# Runs Sisyphusball on one Linux VM: the game server, and Caddy in front of it
+# for automatic HTTPS (Let's Encrypt) and compression.
+services:
+  app:
+    image: ghcr.io/khankhanlee/sisyphusball:latest
+    restart: unless-stopped
+    env_file: .env # CONTACT_EMAIL, PI_VALIDATION_KEY
+    environment:
+      APP_ENV: production
+      DATA_FILE: /data/scores.json
+    volumes:
+      - ./data:/data # ranking + daily backups live on the VM disk
+    expose:
+      - "8080"
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    env_file: .env # DOMAIN
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+
+volumes:
+  caddy_data:
+  caddy_config:

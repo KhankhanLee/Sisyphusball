@@ -1,0 +1,48 @@
+# Fly.io deployment: one machine runs the Dart server, which also serves the
+# Flutter web build and the /privacy and /terms pages.
+#
+# App names are global on Fly.io. Change `app` if it is taken; a Testnet app
+# and a later Mainnet app must be two separate Fly apps (different URLs).
+app = "sisyphusball-testnet"
+primary_region = "nrt" # Tokyo, closest to Korea
+
+[build]
+  dockerfile = "Dockerfile"
+
+# Non-secret settings. Set secrets with `fly secrets set`:
+#   PI_VALIDATION_KEY  from the Pi Developer Portal (Domain verification)
+#   CONTACT_EMAIL      shown on the Privacy Policy and Terms pages
+[env]
+  APP_ENV = "production" # Pi sandbox and guest play off
+  PORT = "8080"
+  DATA_FILE = "/data/scores.json"
+
+# The ranking lives in one JSON file on this volume, so it survives deploys.
+[[mounts]]
+  source = "sisyphus_data"
+  destination = "/data"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  # Sessions and the live feed live in memory: keep exactly one machine,
+  # always running (also run `fly scale count 1`).
+  auto_stop_machines = "off"
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [http_service.concurrency]
+    type = "connections"
+    soft_limit = 800
+    hard_limit = 1000
+
+  [[http_service.checks]]
+    grace_period = "15s"
+    interval = "30s"
+    method = "GET"
+    path = "/api/config"
+    timeout = "5s"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"

@@ -5,7 +5,7 @@
     "display": "standalone",
     "background_color": "#14111C",
     "theme_color": "#14111C",
-    "description": "정상은 없다. 그래도 민다.",
+    "description": "There is no summit. Push anyway.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

@@ -3,15 +3,17 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 
 import 'game_controller.dart';
-import 'lane_painter.dart';
+import 'game_painter.dart';
+import 'scene.dart';
 
 /// Full-screen game surface. Hold to push the stone up; let go and it rolls
 /// back down. In 2P mode the left half of the screen (or W) is player 1 and
 /// the right half (or ↑) is player 2.
 class GameView extends StatefulWidget {
-  const GameView({super.key, required this.game});
+  const GameView({super.key, required this.game, required this.overlay});
 
   final GameController game;
+  final SceneOverlay overlay;
 
   @override
   State<GameView> createState() => _GameViewState();
@@ -98,7 +100,7 @@ class _GameViewState extends State<GameView> with SingleTickerProviderStateMixin
           _pointers.remove(e.pointer);
           _sync();
         },
-        child: CustomPaint(painter: GamePainter(game), size: Size.infinite),
+        child: CustomPaint(painter: GamePainter(game, widget.overlay), size: Size.infinite),
       ),
     );
   }
