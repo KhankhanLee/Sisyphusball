@@ -1,5 +1,6 @@
-# Runs Sisyphusball on one Linux VM: the game server, and Caddy in front of it
-# for automatic HTTPS (Let's Encrypt) and compression.
+# Runs Sisyphusball on one Linux VM: the Mainnet game server, a Testnet copy
+# for trying changes out (its own ranking and Pi app), and Caddy in front of
+# both for automatic HTTPS (Let's Encrypt) and compression.
 services:
   app:
     image: ghcr.io/khankhanlee/sisyphusball:latest
@@ -13,10 +14,24 @@ services:
     expose:
       - "8080"
 
+  app-testnet:
+    image: ghcr.io/khankhanlee/sisyphusball:latest
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      APP_ENV: production
+      DATA_FILE: /data/scores.json
+      # The Testnet app in the Pi Developer Portal has its own key.
+      PI_VALIDATION_KEY: ${TESTNET_PI_VALIDATION_KEY:-}
+    volumes:
+      - ./data-testnet:/data
+    expose:
+      - "8080"
+
   caddy:
     image: caddy:2
     restart: unless-stopped
-    env_file: .env # DOMAIN
+    env_file: .env # DOMAIN, TESTNET_DOMAIN
     ports:
       - "80:80"
       - "443:443"
@@ -27,6 +42,7 @@ services:
       - caddy_config:/config
     depends_on:
       - app
+      - app-testnet
 
 volumes:
   caddy_data:

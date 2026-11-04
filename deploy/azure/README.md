@@ -116,6 +116,22 @@ cd ~/Sisyphusball/deploy/azure
 
 `https://<주소>/validation-key.txt`에 키가 보이면 포털에서 **Verify**를 누릅니다.
 
+### Mainnet 추가하기 (Testnet은 그대로 두고)
+
+Mainnet 앱은 Testnet 앱과 별개의 앱이라 **자기 도메인**이 따로 필요합니다
+(예: GitHub Student Pack으로 받은 `sisyphusball.me`).
+
+1. 도메인 DNS에 **A 레코드** `@` → VM의 공용 IP 를 추가합니다.
+2. VM에서 한 번만:
+   ```bash
+   cd ~/Sisyphusball/deploy/azure
+   git pull
+   ./add-mainnet.sh sisyphusball.me
+   ```
+   지금까지의 주소·키·랭킹은 Testnet용(`TESTNET_DOMAIN`, `data-testnet/`)으로 옮겨지고,
+   새 도메인은 빈 랭킹으로 시작합니다.
+3. 포털의 Mainnet 앱에서 받은 키로 `./set-validation-key.sh <키>` 후 **Verify**.
+
 ---
 
 ## 운영 명령어 (VM 안, `~/Sisyphusball/deploy/azure`에서)
@@ -130,7 +146,7 @@ cd ~/Sisyphusball/deploy/azure
 
 ## 데이터와 백업
 
-- 랭킹: `~/Sisyphusball/deploy/azure/data/scores.json`
+- 랭킹: `~/Sisyphusball/deploy/azure/data/scores.json` (Testnet은 `data-testnet/scores.json`)
 - 자동 백업: 같은 폴더의 `data/backups/scores-YYYY-MM-DD.json`. 하루 1개, 최근 14개를 보관합니다.
 - 백업으로 되돌리기:
   ```bash

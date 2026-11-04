@@ -19,7 +19,7 @@ if [ ! -f .env ]; then
   chmod 600 .env
 fi
 
-mkdir -p data
+mkdir -p data data-testnet
 echo "==> Starting"
 sudo docker compose pull
 sudo docker compose up -d
