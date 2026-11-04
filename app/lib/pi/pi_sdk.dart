@@ -3,4 +3,5 @@
 /// SDK as unavailable so the app falls back to guest play.
 library;
 
+export 'pi_sandbox.dart';
 export 'pi_sdk_stub.dart' if (dart.library.js_interop) 'pi_sdk_web.dart';
