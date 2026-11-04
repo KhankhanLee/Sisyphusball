@@ -15,6 +15,45 @@
   <title>Sisyphusball</title>
   <style>html, body { margin: 0; background: #14111C; }</style>
   <script>
+    // Frame guard. Inside the Pi Browser the game drew its first frame and
+    // then never updated, as if requestAnimationFrame stopped firing in its
+    // framed WebView. Every frame request is raced against a short timer: in
+    // a normal browser rAF always wins (no change); where rAF stalls, the
+    // timer keeps the game rendering. Counts go to the server log.
+    (function () {
+      var nativeRaf = window.requestAnimationFrame.bind(window);
+      var nativeCancel = window.cancelAnimationFrame.bind(window);
+      var stats = (window.__sisyphusFrames = { raf: 0, timer: 0 });
+      var pending = {};
+      var nextId = 1;
+      window.requestAnimationFrame = function (callback) {
+        var id = nextId++;
+        var done = false;
+        function run(time, viaTimer) {
+          if (done) return;
+          done = true;
+          var p = pending[id];
+          delete pending[id];
+          if (viaTimer) { stats.timer++; if (p) nativeCancel(p.raf); }
+          else { stats.raf++; if (p) clearTimeout(p.timer); }
+          callback(time);
+        }
+        pending[id] = {
+          raf: nativeRaf(function (t) { run(t, false); }),
+          timer: setTimeout(function () { run(performance.now(), true); }, 50)
+        };
+        return id;
+      };
+      window.cancelAnimationFrame = function (id) {
+        var p = pending[id];
+        if (!p) return;
+        delete pending[id];
+        nativeCancel(p.raf);
+        clearTimeout(p.timer);
+      };
+    })();
+  </script>
+  <script>
     // Boot report: tells the server log what this browser supports, so issues
     // inside the Pi Browser (which we cannot inspect directly) can be found.
     (function () {
@@ -48,8 +87,16 @@
           'framed=' + (window.self !== window.top),
           'piSdk=' + (typeof window.Pi === 'object'),
           'dpr=' + window.devicePixelRatio,
-          'size=' + window.innerWidth + 'x' + window.innerHeight
+          'size=' + window.innerWidth + 'x' + window.innerHeight,
+          'visibility=' + document.visibilityState
         ].join(' '));
+        // How frames were delivered in the first seconds: raf = by the
+        // browser, timer = by the frame guard because rAF stalled.
+        setTimeout(function () {
+          var f = window.__sisyphusFrames || {};
+          send('frames', 'raf=' + f.raf + ' timer=' + f.timer +
+            ' visibility=' + document.visibilityState + ' focus=' + document.hasFocus());
+        }, 6000);
       });
     })();
   </script>
