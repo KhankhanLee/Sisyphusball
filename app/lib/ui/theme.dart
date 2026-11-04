@@ -38,3 +38,25 @@ Widget clampTextScaling(BuildContext context, Widget? child) => MediaQuery.withC
       maxScaleFactor: maxTextScale,
       child: child ?? const SizedBox.shrink(),
     );
+
+/// `MaterialApp.builder`: [clampTextScaling] plus sane text-spacing
+/// overrides.
+///
+/// Flutter on the web honours the browser's text-spacing accessibility
+/// settings (line height, letter/word/paragraph spacing) by measuring a
+/// hidden probe element. Inside the Pi Browser that probe reports a line
+/// height 625 times the font size, so every line of text became ~600 times
+/// too tall and the whole title card was pushed off screen. Values in a
+/// plausible accessibility range are kept; absurd ones are dropped.
+Widget safeTypography(BuildContext context, Widget? child) {
+  final data = MediaQuery.of(context);
+  double? within(double? value, double min, double max) =>
+      value != null && value >= min && value <= max ? value : null;
+  return MediaQuery.applyTextStyleOverrides(
+    lineHeightScaleFactorOverride: within(data.lineHeightScaleFactorOverride, 0.5, 3),
+    letterSpacingOverride: within(data.letterSpacingOverride, -5, 20),
+    wordSpacingOverride: within(data.wordSpacingOverride, -5, 40),
+    paragraphSpacingOverride: within(data.paragraphSpacingOverride, 0, 100),
+    child: Builder(builder: (context) => clampTextScaling(context, child)),
+  );
+}

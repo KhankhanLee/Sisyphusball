@@ -10,7 +10,7 @@ void main() {
     Future<double> heightAt(double scale) async {
       tester.platformDispatcher.textScaleFactorTestValue = scale;
       await tester.pumpWidget(MaterialApp(
-        builder: clampTextScaling,
+        builder: safeTypography,
         home: const Scaffold(body: Text('Sisyphusball', style: TextStyle(fontSize: 20))),
       ));
       return tester.getSize(find.text('Sisyphusball')).height;
