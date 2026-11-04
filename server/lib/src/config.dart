@@ -9,6 +9,7 @@ class ServerConfig {
     this.validationKey = '',
     this.contactEmail = '',
     this.flutterEngine = '',
+    this.debugShots = false,
     this.legalDir = 'legal',
     this.leaderboardSize = 50,
     this.piApiBase = 'https://api.minepi.com',
@@ -33,6 +34,7 @@ class ServerConfig {
       validationKey: env['PI_VALIDATION_KEY'] ?? '',
       contactEmail: env['CONTACT_EMAIL'] ?? '',
       flutterEngine: env['FLUTTER_ENGINE'] ?? '',
+      debugShots: flag('DEBUG_SHOTS', false),
       legalDir: env['LEGAL_DIR'] ?? 'legal',
       piApiBase: env['PI_API_BASE'] ?? 'https://api.minepi.com',
       dataFile: env['DATA_FILE'] ?? 'data/scores.json',
@@ -55,6 +57,9 @@ class ServerConfig {
   /// `{"renderer":"canvaskit","canvasKitForceCpuOnly":true}`. Served at
   /// /api/engine; lets the renderer be switched without a rebuild.
   final String flutterEngine;
+
+  /// Lets the app upload a screenshot of its own rendering (debugging).
+  final bool debugShots;
 
   /// Where privacy.html and terms.html live.
   final String legalDir;

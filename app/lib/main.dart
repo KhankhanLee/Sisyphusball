@@ -25,7 +25,8 @@ void main() {
   runApp(const SisyphusApp());
   diagnostics
     ..reportFirstFrame()
-    ..reportFrameCount();
+    ..reportFrameCount()
+    ..reportLayout();
 }
 
 class SisyphusApp extends StatelessWidget {
@@ -36,7 +37,10 @@ class SisyphusApp extends StatelessWidget {
         title: Copy.appName,
         debugShowCheckedModeBanner: false,
         theme: buildTheme(),
-        builder: clampTextScaling,
+        builder: (context, child) => RepaintBoundary(
+          key: diagnostics.captureKey,
+          child: clampTextScaling(context, child),
+        ),
         home: const GameShell(),
       );
 }

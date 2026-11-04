@@ -12,6 +12,7 @@ import '../live/observers.dart';
 import '../runs/run_registry.dart';
 import '../scores/score_service.dart';
 import 'client_log.dart';
+import 'debug_shots.dart';
 import 'http_error.dart';
 import 'legal_pages.dart';
 import 'middleware.dart';
@@ -28,6 +29,7 @@ import 'middleware.dart';
 ///   GET  /ws                       live feed: {"type":"board"|"live", ...}
 ///   POST /api/client-log           {event, detail, ua} from browsers, logged
 ///   GET  /api/engine               Flutter engine settings (FLUTTER_ENGINE)
+///   POST /api/debug/shot, GET /api/debug/shot.png   app self-screenshot (DEBUG_SHOTS)
 ///   GET  /privacy, /terms          legal pages for the Pi Developer Portal
 class ApiRoutes {
   ApiRoutes({
@@ -37,7 +39,8 @@ class ApiRoutes {
     required this.runs,
     ClientLog? clientLog,
   })  : legal = LegalPages(directory: config.legalDir, contactEmail: config.contactEmail),
-        clientLog = clientLog ?? ClientLog();
+        clientLog = clientLog ?? ClientLog(),
+        debugShots = DebugShots(enabled: config.debugShots);
 
   final ServerConfig config;
   final AuthService auth;
@@ -45,6 +48,7 @@ class ApiRoutes {
   final RunRegistry runs;
   final LegalPages legal;
   final ClientLog clientLog;
+  final DebugShots debugShots;
 
   Router get router => Router()
     ..get('/api/config', _config)
@@ -56,6 +60,8 @@ class ApiRoutes {
     ..post('/api/runs/<id>/finish', _finish)
     ..post('/api/client-log', clientLog.handle)
     ..get('/api/engine', _engine)
+    ..post('/api/debug/shot', debugShots.upload)
+    ..get('/api/debug/shot.png', debugShots.latest)
     ..get('/ws', webSocketHandler(_onSocket))
     ..get('/validation-key.txt', _validationKey)
     ..get('/privacy', (Request _) => legal.render('privacy'))
@@ -63,7 +69,12 @@ class ApiRoutes {
     ..all('/api/<rest|.*>', (Request _) => throw HttpError(404, 'not found'));
 
   Response _config(Request _) =>
-      jsonResponse({'sandbox': config.sandbox, 'allowGuest': config.allowGuests, 'seed': config.seed});
+      jsonResponse({
+        'sandbox': config.sandbox,
+        'allowGuest': config.allowGuests,
+        'seed': config.seed,
+        if (config.debugShots) 'debugShots': true,
+      });
 
   Future<Response> _signIn(Request req) async {
     final (token, who) = await auth.signIn(await readJson(req));
