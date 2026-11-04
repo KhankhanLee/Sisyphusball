@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'app_services.dart';
 import 'copy.dart';
 import 'data/api_client.dart';
+import 'data/diagnostics.dart';
 import 'game/game_controller.dart';
 import 'game/game_view.dart';
 import 'models/screen_model.dart';
@@ -15,7 +16,15 @@ import 'ui/screens/title_screen.dart';
 import 'ui/screens/versus_result_screen.dart';
 import 'ui/theme.dart';
 
-void main() => runApp(const SisyphusApp());
+final diagnostics = Diagnostics();
+
+void main() {
+  diagnostics
+    ..install()
+    ..report('dart-start');
+  runApp(const SisyphusApp());
+  diagnostics.reportFirstFrame();
+}
 
 class SisyphusApp extends StatelessWidget {
   const SisyphusApp({super.key});
@@ -41,7 +50,7 @@ class GameShell extends StatefulWidget {
 }
 
 class _GameShellState extends State<GameShell> {
-  late final AppServices s = widget.services ?? AppServices(askGuestName: () => showGuestNameDialog(context));
+  late final AppServices s = widget.services ?? AppServices(askGuestName: () => showGuestNameDialog(context), diagnostics: diagnostics);
 
   @override
   void initState() {

@@ -14,6 +14,43 @@
   <link rel="manifest" href="manifest.json">
   <title>Sisyphusball</title>
   <style>html, body { margin: 0; background: #14111C; }</style>
+  <script>
+    // Boot report: tells the server log what this browser supports, so issues
+    // inside the Pi Browser (which we cannot inspect directly) can be found.
+    (function () {
+      function send(event, detail) {
+        try {
+          var body = JSON.stringify({ event: event, detail: detail, ua: navigator.userAgent });
+          if (!(navigator.sendBeacon && navigator.sendBeacon('api/client-log', body))) {
+            fetch('api/client-log', { method: 'POST', body: body, keepalive: true });
+          }
+        } catch (e) {}
+      }
+      function gl() {
+        try {
+          var c = document.createElement('canvas');
+          return c.getContext('webgl2') ? 'webgl2' : (c.getContext('webgl') ? 'webgl1' : 'none');
+        } catch (e) { return 'error'; }
+      }
+      window.addEventListener('error', function (e) {
+        send('js-error', (e.message || 'error') + ' @ ' + (e.filename || '') + ':' + (e.lineno || ''));
+      });
+      window.addEventListener('unhandledrejection', function (e) {
+        send('js-rejection', String(e.reason && (e.reason.message || e.reason)));
+      });
+      window.addEventListener('load', function () {
+        send('boot', [
+          'gl=' + gl(),
+          'wasm=' + (typeof WebAssembly === 'object'),
+          'segmenter=' + (typeof Intl === 'object' && 'Segmenter' in Intl),
+          'framed=' + (window.self !== window.top),
+          'piSdk=' + (typeof window.Pi === 'object'),
+          'dpr=' + window.devicePixelRatio,
+          'size=' + window.innerWidth + 'x' + window.innerHeight
+        ].join(' '));
+      });
+    })();
+  </script>
   <!-- Pi Network SDK: exposes window.Pi, used from Dart via dart:js_interop -->
   <script src="https://sdk.minepi.com/pi-sdk.js"></script>
 </head>

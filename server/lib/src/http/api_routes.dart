@@ -9,6 +9,7 @@ import '../events.dart';
 import '../live/observers.dart';
 import '../runs/run_registry.dart';
 import '../scores/score_service.dart';
+import 'client_log.dart';
 import 'http_error.dart';
 import 'legal_pages.dart';
 import 'middleware.dart';
@@ -23,16 +24,24 @@ import 'middleware.dart';
 ///   POST /api/runs/{id}/progress   (bearer) {height}
 ///   POST /api/runs/{id}/finish     (bearer) {score}
 ///   GET  /ws                       live feed: {"type":"board"|"live", ...}
+///   POST /api/client-log           {event, detail, ua} from browsers, logged
 ///   GET  /privacy, /terms          legal pages for the Pi Developer Portal
 class ApiRoutes {
-  ApiRoutes({required this.config, required this.auth, required this.scores, required this.runs})
-      : legal = LegalPages(directory: config.legalDir, contactEmail: config.contactEmail);
+  ApiRoutes({
+    required this.config,
+    required this.auth,
+    required this.scores,
+    required this.runs,
+    ClientLog? clientLog,
+  })  : legal = LegalPages(directory: config.legalDir, contactEmail: config.contactEmail),
+        clientLog = clientLog ?? ClientLog();
 
   final ServerConfig config;
   final AuthService auth;
   final ScoreService scores;
   final RunRegistry runs;
   final LegalPages legal;
+  final ClientLog clientLog;
 
   Router get router => Router()
     ..get('/api/config', _config)
@@ -42,6 +51,7 @@ class ApiRoutes {
     ..post('/api/runs', _startRun)
     ..post('/api/runs/<id>/progress', _progress)
     ..post('/api/runs/<id>/finish', _finish)
+    ..post('/api/client-log', clientLog.handle)
     ..get('/ws', webSocketHandler(_onSocket))
     ..get('/validation-key.txt', _validationKey)
     ..get('/privacy', (Request _) => legal.render('privacy'))
