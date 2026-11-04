@@ -1,8 +1,19 @@
-# HTTPS certificate for $DOMAIN is obtained and renewed automatically.
+# HTTPS certificates are obtained and renewed automatically.
+# The Pi Browser shows apps inside its own frame; never forbid that.
+
+# Mainnet: the app players find in the Pi Browser.
 {$DOMAIN} {
 	encode zstd gzip
 	reverse_proxy app:8080 {
-		# The Pi Browser shows apps inside its own frame; never forbid that.
+		header_down -X-Frame-Options
+	}
+}
+
+# Testnet: try changes here first. Without TESTNET_DOMAIN it answers on
+# localhost only.
+{$TESTNET_DOMAIN:localhost} {
+	encode zstd gzip
+	reverse_proxy app-testnet:8080 {
 		header_down -X-Frame-Options
 	}
 }

@@ -10,6 +10,7 @@ build/
 # runtime data (anchored: app/lib/data/ is source code and must stay tracked)
 /server/data/
 /deploy/azure/data/
+/deploy/azure/data-testnet/
 /data/
 .env
 *.log
