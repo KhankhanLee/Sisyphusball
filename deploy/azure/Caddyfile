@@ -1,5 +1,8 @@
 # HTTPS certificate for $DOMAIN is obtained and renewed automatically.
 {$DOMAIN} {
 	encode zstd gzip
-	reverse_proxy app:8080
+	reverse_proxy app:8080 {
+		# The Pi Browser shows apps inside its own frame; never forbid that.
+		header_down -X-Frame-Options
+	}
 }

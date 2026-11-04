@@ -27,6 +27,7 @@ void main() {
       log: IOSink(StreamController<List<int>>().sink),
     );
     server = await io.serve(app.handler, InternetAddress.loopbackIPv4, 0);
+    allowEmbeddingInPiBrowser(server);
     base = Uri.parse('http://127.0.0.1:${server.port}');
   });
 
@@ -140,6 +141,15 @@ void main() {
       final res = await http.get(base.resolve(path));
       expect(res.statusCode, 200, reason: path);
       expect(res.headers['content-type'], startsWith('text/html'));
+    }
+  });
+
+  test('pages may be shown inside the Pi Browser frame', () async {
+    // dart:io sends X-Frame-Options: SAMEORIGIN by default, which makes the
+    // Pi Browser refuse to show the app (net::ERR_BLOCKED_BY_RESPONSE).
+    for (final path in ['/', '/api/config', '/privacy']) {
+      final res = await http.get(base.resolve(path));
+      expect(res.headers.containsKey('x-frame-options'), isFalse, reason: path);
     }
   });
 

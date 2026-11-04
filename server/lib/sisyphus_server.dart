@@ -72,3 +72,10 @@ class SisyphusServer {
     scores.detachAll();
   }
 }
+
+/// `dart:io` adds `X-Frame-Options: SAMEORIGIN` to every response. The Pi
+/// Browser shows apps inside its own frame, so that header makes it refuse to
+/// load the game (`net::ERR_BLOCKED_BY_RESPONSE`). Call this on the server
+/// returned by `shelf_io.serve`.
+void allowEmbeddingInPiBrowser(HttpServer server) =>
+    server.defaultResponseHeaders.removeAll('x-frame-options');

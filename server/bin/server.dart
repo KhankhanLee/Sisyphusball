@@ -11,6 +11,7 @@ Future<void> main() async {
 
   final app = SisyphusServer(config: config, repository: repository);
   final server = await io.serve(app.handler, InternetAddress.anyIPv4, config.port);
+  allowEmbeddingInPiBrowser(server);
   stdout.writeln('Sisyphusball on http://localhost:${server.port} '
       '(sandbox=${config.sandbox}, guests=${config.allowGuests})');
 
