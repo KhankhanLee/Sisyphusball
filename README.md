@@ -114,7 +114,7 @@ server/lib/
 # 1) 웹 클라이언트 빌드
 cd app
 flutter pub get
-flutter build web --release --no-web-resources-cdn
+flutter build web --release --wasm --no-web-resources-cdn
 
 # 2) 서버 실행 (app/build/web을 함께 서빙)
 cd ../server

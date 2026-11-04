@@ -3,7 +3,7 @@ FROM ghcr.io/cirruslabs/flutter:stable AS web
 WORKDIR /src
 COPY packages packages
 COPY app app
-RUN cd app && flutter pub get && flutter build web --release --no-web-resources-cdn
+RUN cd app && flutter pub get && flutter build web --release --wasm --no-web-resources-cdn
 
 # 2) Dart server, compiled ahead of time
 FROM dart:stable AS server
