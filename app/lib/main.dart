@@ -23,7 +23,9 @@ void main() {
     ..install()
     ..report('dart-start');
   runApp(const SisyphusApp());
-  diagnostics.reportFirstFrame();
+  diagnostics
+    ..reportFirstFrame()
+    ..reportFrameCount();
 }
 
 class SisyphusApp extends StatelessWidget {

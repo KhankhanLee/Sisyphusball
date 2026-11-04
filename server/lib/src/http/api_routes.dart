@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
 import 'package:shelf_web_socket/shelf_web_socket.dart';
@@ -25,6 +27,7 @@ import 'middleware.dart';
 ///   POST /api/runs/{id}/finish     (bearer) {score}
 ///   GET  /ws                       live feed: {"type":"board"|"live", ...}
 ///   POST /api/client-log           {event, detail, ua} from browsers, logged
+///   GET  /api/engine               Flutter engine settings (FLUTTER_ENGINE)
 ///   GET  /privacy, /terms          legal pages for the Pi Developer Portal
 class ApiRoutes {
   ApiRoutes({
@@ -52,6 +55,7 @@ class ApiRoutes {
     ..post('/api/runs/<id>/progress', _progress)
     ..post('/api/runs/<id>/finish', _finish)
     ..post('/api/client-log', clientLog.handle)
+    ..get('/api/engine', _engine)
     ..get('/ws', webSocketHandler(_onSocket))
     ..get('/validation-key.txt', _validationKey)
     ..get('/privacy', (Request _) => legal.render('privacy'))
@@ -69,6 +73,21 @@ class ApiRoutes {
   Response _me(Request req) {
     final who = auth.requireSession(req.headers['authorization']);
     return jsonResponse({'user': who.toJson(), 'standing': scores.standingOf(who.uid).toJson()});
+  }
+
+  /// Only the Flutter loader settings we know about pass through.
+  Response _engine(Request _) {
+    const allowed = {'renderer', 'canvasKitVariant', 'canvasKitForceCpuOnly'};
+    Map<String, dynamic> settings = {};
+    try {
+      final parsed = config.flutterEngine.isEmpty ? null : jsonDecode(config.flutterEngine);
+      if (parsed is Map<String, dynamic>) {
+        settings = {for (final e in parsed.entries) if (allowed.contains(e.key)) e.key: e.value};
+      }
+    } on FormatException {
+      // a malformed value means defaults
+    }
+    return jsonResponse(settings);
   }
 
   Response _leaderboard(Request _) => jsonResponse(scores.leaderboard().toJson());

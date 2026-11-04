@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:ui';
 
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import 'package:sisyphus_core/sisyphus_core.dart';
@@ -30,6 +32,14 @@ class Diagnostics implements Observer<AppEvent> {
       report('dart-error', '$error');
       return false; // keep the default handling (console)
     };
+  }
+
+  /// Counts the frames Flutter actually produced in the first seconds; a
+  /// handful means rendering stalled after the first frame.
+  void reportFrameCount({Duration after = const Duration(seconds: 6)}) {
+    var frames = 0;
+    SchedulerBinding.instance.addPersistentFrameCallback((_) => frames++);
+    Timer(after, () => report('flutter-frames', '$frames in ${after.inSeconds}s'));
   }
 
   /// After the first frame, measures a line of text: a width of 0 means the

@@ -8,6 +8,7 @@ class ServerConfig {
     this.seed = defaultSeed,
     this.validationKey = '',
     this.contactEmail = '',
+    this.flutterEngine = '',
     this.legalDir = 'legal',
     this.leaderboardSize = 50,
     this.piApiBase = 'https://api.minepi.com',
@@ -31,6 +32,7 @@ class ServerConfig {
       seed: int.tryParse(env['MOUNTAIN_SEED'] ?? '') ?? defaultSeed,
       validationKey: env['PI_VALIDATION_KEY'] ?? '',
       contactEmail: env['CONTACT_EMAIL'] ?? '',
+      flutterEngine: env['FLUTTER_ENGINE'] ?? '',
       legalDir: env['LEGAL_DIR'] ?? 'legal',
       piApiBase: env['PI_API_BASE'] ?? 'https://api.minepi.com',
       dataFile: env['DATA_FILE'] ?? 'data/scores.json',
@@ -48,6 +50,11 @@ class ServerConfig {
 
   /// Shown on the Privacy Policy and Terms pages.
   final String contactEmail;
+
+  /// Flutter engine settings for browsers, as JSON, e.g.
+  /// `{"renderer":"canvaskit","canvasKitForceCpuOnly":true}`. Served at
+  /// /api/engine; lets the renderer be switched without a rebuild.
+  final String flutterEngine;
 
   /// Where privacy.html and terms.html live.
   final String legalDir;
