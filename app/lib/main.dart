@@ -39,7 +39,7 @@ class SisyphusApp extends StatelessWidget {
         theme: buildTheme(),
         builder: (context, child) => RepaintBoundary(
           key: diagnostics.captureKey,
-          child: clampTextScaling(context, child),
+          child: safeTypography(context, child),
         ),
         home: const GameShell(),
       );
