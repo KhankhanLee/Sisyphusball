@@ -2,6 +2,7 @@ import 'auth/auth_service.dart';
 import 'auth/auth_strategy.dart';
 import 'copy.dart';
 import 'data/api_client.dart';
+import 'data/diagnostics.dart';
 import 'data/live_feed.dart';
 import 'data/models.dart';
 import 'data/run_reporter.dart';
@@ -19,14 +20,18 @@ import 'models/screen_model.dart';
 ///   ──────────────       ───────────────────────────────────────────
 ///   GameController    →  RunReporter, ScreenModel
 ///   RunReporter       →  ScreenModel, PlayerModel, LeaderboardModel, PresenceModel
-///   AuthService       →  PlayerModel
+///   AuthService       →  PlayerModel, Diagnostics (when given)
 ///   LiveFeed          →  LeaderboardModel, PresenceModel
 ///
 /// Four subjects, five observers, and most observers listen to more than
 /// one subject: n:m.
 class AppServices {
-  AppServices({required Future<String?> Function() askGuestName, List<AuthStrategy>? authStrategies, ApiClient? api})
-      : api = api ?? ApiClient() {
+  AppServices({
+    required Future<String?> Function() askGuestName,
+    List<AuthStrategy>? authStrategies,
+    ApiClient? api,
+    Diagnostics? diagnostics,
+  }) : api = api ?? ApiClient() {
     game = GameController();
     feed = LiveFeed();
     auth = AuthService(this.api, authStrategies ?? [const PiAuthStrategy(), GuestAuthStrategy(askGuestName)]);
@@ -42,6 +47,7 @@ class AppServices {
       ..attach(leaderboard)
       ..attach(presence);
     auth.attach(player);
+    if (diagnostics != null) auth.attach(diagnostics);
     feed
       ..attach(leaderboard)
       ..attach(presence);

@@ -10,6 +10,7 @@ import 'src/auth/auth_service.dart';
 import 'src/auth/auth_strategy.dart';
 import 'src/config.dart';
 import 'src/http/api_routes.dart';
+import 'src/http/client_log.dart';
 import 'src/http/middleware.dart';
 import 'src/live/observers.dart';
 import 'src/runs/run_registry.dart';
@@ -38,7 +39,8 @@ class SisyphusServer {
     required ScoreRepository repository,
     PiTokenVerifier? verifyPiToken,
     IOSink? log,
-  })  : scores = ScoreService(repository, boardSize: config.leaderboardSize),
+  })  : _log = log,
+        scores = ScoreService(repository, boardSize: config.leaderboardSize),
         runs = RunRegistry(),
         auth = AuthService([
           verifyPiToken != null
@@ -50,16 +52,19 @@ class SisyphusServer {
   }
 
   final ServerConfig config;
+  final IOSink? _log;
   final ScoreService scores;
   final RunRegistry runs;
   final AuthService auth;
 
   Handler get handler {
-    final api = ApiRoutes(config: config, auth: auth, scores: scores, runs: runs);
+    final api = ApiRoutes(config: config, auth: auth, scores: scores, runs: runs, clientLog: ClientLog(_log));
     var cascade = Cascade().add(api.router.call);
     final webDir = config.webDir;
     if (webDir != null && Directory(webDir).existsSync()) {
-      cascade = cascade.add(createStaticHandler(webDir, defaultDocument: 'index.html'));
+      cascade = cascade.add(const Pipeline()
+          .addMiddleware(revalidateStaticFiles())
+          .addHandler(createStaticHandler(webDir, defaultDocument: 'index.html')));
     }
     return const Pipeline()
         .addMiddleware(allowAnyOrigin())
