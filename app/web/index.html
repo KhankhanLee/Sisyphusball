@@ -19,6 +19,7 @@
     // inside the Pi Browser (which we cannot inspect directly) can be found.
     (function () {
       function send(event, detail) {
+        // also used by flutter_bootstrap.js
         try {
           var body = JSON.stringify({ event: event, detail: detail, ua: navigator.userAgent });
           if (!(navigator.sendBeacon && navigator.sendBeacon('api/client-log', body))) {
@@ -32,6 +33,7 @@
           return c.getContext('webgl2') ? 'webgl2' : (c.getContext('webgl') ? 'webgl1' : 'none');
         } catch (e) { return 'error'; }
       }
+      window.sisyphusReport = send;
       window.addEventListener('error', function (e) {
         send('js-error', (e.message || 'error') + ' @ ' + (e.filename || '') + ':' + (e.lineno || ''));
       });
