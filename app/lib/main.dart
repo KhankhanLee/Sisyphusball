@@ -34,6 +34,7 @@ class SisyphusApp extends StatelessWidget {
         title: Copy.appName,
         debugShowCheckedModeBanner: false,
         theme: buildTheme(),
+        builder: clampTextScaling,
         home: const GameShell(),
       );
 }

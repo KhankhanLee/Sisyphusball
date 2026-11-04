@@ -25,3 +25,16 @@ ThemeData buildTheme() => ThemeData(
       scaffoldBackgroundColor: Palette.background,
       colorScheme: const ColorScheme.dark(primary: Palette.accent),
     );
+
+/// Largest text scale the game honours.
+const double maxTextScale = 1.2;
+
+/// `MaterialApp.builder` that keeps text scaling within [maxTextScale].
+///
+/// Flutter on the web derives the text scale from the browser's base font
+/// size. Some WebViews, the Pi Browser among them, report one so large that
+/// a single letter fills the screen and every word is pushed out of sight.
+Widget clampTextScaling(BuildContext context, Widget? child) => MediaQuery.withClampedTextScaling(
+      maxScaleFactor: maxTextScale,
+      child: child ?? const SizedBox.shrink(),
+    );

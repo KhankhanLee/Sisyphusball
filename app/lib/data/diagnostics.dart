@@ -40,7 +40,14 @@ class Diagnostics implements Observer<AppEvent> {
         text: const TextSpan(text: 'Sisyphusball', style: TextStyle(fontSize: 20)),
         textDirection: TextDirection.ltr,
       )..layout();
-      report('first-frame', 'textWidth=${probe.width.toStringAsFixed(1)}');
+      final view = PlatformDispatcher.instance.implicitView;
+      report(
+        'first-frame',
+        'textWidth=${probe.width.toStringAsFixed(1)} '
+            'platformTextScale=${PlatformDispatcher.instance.textScaleFactor.toStringAsFixed(2)} '
+            'view=${view?.physicalSize.width.round()}x${view?.physicalSize.height.round()} '
+            'dpr=${view?.devicePixelRatio}',
+      );
       probe.dispose();
     });
   }
