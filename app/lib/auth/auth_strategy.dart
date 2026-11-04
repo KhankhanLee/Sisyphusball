@@ -21,7 +21,7 @@ class PiAuthStrategy implements AuthStrategy {
   Future<Map<String, dynamic>?> credentials(ServerSettings settings) async {
     if (!piSdkLoaded) return null;
     try {
-      final token = await piAuthenticate(sandbox: settings.sandbox).timeout(timeout);
+      final token = await piAuthenticate(sandbox: settings.sandbox || piInSandboxFrame).timeout(timeout);
       return {'accessToken': token};
     } catch (_) {
       return null;
