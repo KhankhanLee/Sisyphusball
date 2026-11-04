@@ -1,3 +1,4 @@
+import 'ads/ad_breaks.dart';
 import 'auth/auth_service.dart';
 import 'auth/auth_strategy.dart';
 import 'copy.dart';
@@ -12,18 +13,19 @@ import 'models/player_model.dart';
 import 'models/presence_model.dart';
 import 'models/scene_overlay_model.dart';
 import 'models/screen_model.dart';
+import 'pi/pi_sdk.dart';
 
 /// Composition root: creates every service and model once and wires the
 /// observers to their subjects. This table is the whole event flow:
 ///
 ///   subject           →  observers
 ///   ──────────────       ───────────────────────────────────────────
-///   GameController    →  RunReporter, ScreenModel
+///   GameController    →  RunReporter, ScreenModel, AdBreaks
 ///   RunReporter       →  ScreenModel, PlayerModel, LeaderboardModel, PresenceModel
 ///   AuthService       →  PlayerModel, Diagnostics (when given)
 ///   LiveFeed          →  LeaderboardModel, PresenceModel
 ///
-/// Four subjects, five observers, and most observers listen to more than
+/// Four subjects, six observers, and most observers listen to more than
 /// one subject: n:m.
 class AppServices {
   AppServices({
@@ -31,16 +33,19 @@ class AppServices {
     List<AuthStrategy>? authStrategies,
     ApiClient? api,
     Diagnostics? diagnostics,
+    ShowAd? showAd,
   }) : api = api ?? ApiClient() {
     game = GameController();
     feed = LiveFeed();
     auth = AuthService(this.api, authStrategies ?? [const PiAuthStrategy(), GuestAuthStrategy(askGuestName)]);
     reporter = RunReporter(this.api, currentHeight: () => game.height);
     overlay = SceneOverlayModel(player: player, leaderboard: leaderboard, presence: presence);
+    ads = AdBreaks(showAd ?? piShowInterstitial, onResult: (r) => diagnostics?.report('ad', r));
 
     game
       ..attach(reporter)
-      ..attach(screens);
+      ..attach(screens)
+      ..attach(ads);
     reporter
       ..attach(screens)
       ..attach(player)
@@ -60,6 +65,8 @@ class AppServices {
   late final LiveFeed feed;
   late final AuthService auth;
   late final RunReporter reporter;
+
+  late final AdBreaks ads;
 
   // observers (UI state)
   final screens = ScreenModel();
@@ -85,6 +92,7 @@ class AppServices {
   void dispose() {
     feed.close();
     reporter.dispose();
+    ads.dispose();
     auth.detachAll();
     game
       ..detachAll()
