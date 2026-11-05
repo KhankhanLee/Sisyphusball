@@ -215,3 +215,7 @@ fly secrets set PI_VALIDATION_KEY=<포털에서 받은 키>
 | WS | `/ws` | 서버 → 클라이언트: `{"type":"board",...}`, `{"type":"live",...}` |
 | GET | `/privacy`, `/terms` | Privacy Policy, Terms of Service (HTML) |
 | GET | `/validation-key.txt` | Pi 도메인 검증 키 |
+
+## License
+
+Copyright (c) 2026 KhankhanLee. **All rights reserved.** 코드는 공개되어 있지만 복사·수정·배포·재게시는 허락 없이 할 수 없습니다. 자세한 내용은 [LICENSE](LICENSE).
