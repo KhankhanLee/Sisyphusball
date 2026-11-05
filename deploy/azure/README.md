@@ -134,6 +134,24 @@ Mainnet 앱은 Testnet 앱과 별개의 앱이라 **자기 도메인**이 따로
 
 ---
 
+### Testnet 테스터에게 A2U 보내기 (Mainnet 앱 지갑 조건)
+
+포털은 Mainnet 앱 지갑을 주기 전에 **Testnet 앱이 서로 다른 5명에게 App-to-User 송금**을 했는지 봅니다.
+
+1. 포털의 **Testnet** 앱에서 지갑을 연결하고 Testnet faucet으로 test-Pi를 받아 둡니다. API Key도 발급합니다.
+2. 테스터들이 Pi Browser로 Testnet 주소에서 로그인하고 Push Alone을 한 판씩 합니다 (랭킹에 올라가야 대상이 됩니다).
+3. VM에서 (Testnet 값만! Mainnet 지갑 seed는 절대 넣지 않기):
+   ```bash
+   cd ~/Sisyphusball/deploy/azure
+   printf 'PI_API_KEY=%s\nAPP_WALLET_SEED=%s\n' '<Testnet API Key>' '<Testnet 앱 지갑 S...>' > a2u.env
+   ./pay-testers.sh --dry-run   # 누구에게 보낼지 확인
+   ./pay-testers.sh             # 0.01 test-Pi씩 1번만 송금
+   ```
+   보낸 기록은 `data-testnet/a2u-ledger.json`에 남아 다시 실행해도 새로 온 사람에게만 보냅니다.
+   결제 네트워크가 Mainnet이면 스크립트가 취소하고 멈춥니다.
+
+---
+
 ## 운영 명령어 (VM 안, `~/Sisyphusball/deploy/azure`에서)
 
 | 하고 싶은 것 | 명령어 |

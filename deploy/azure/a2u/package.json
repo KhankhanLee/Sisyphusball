@@ -1,0 +1,9 @@
+{
+  "name": "sisyphusball-a2u",
+  "private": true,
+  "description": "One-off App-to-User test-Pi payments to Testnet players",
+  "main": "a2u.js",
+  "dependencies": {
+    "pi-backend": "0.1.3"
+  }
+}

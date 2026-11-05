@@ -44,7 +44,9 @@ bool get piInSandboxFrame => isPiSandboxReferrer(_referrer);
 
 bool _initialized = false;
 
-/// Runs `Pi.authenticate(['username'])` and returns the user's access token.
+/// Runs `Pi.authenticate(['username', 'payments'])` and returns the user's
+/// access token. `payments` lets the app send A2U payments (Testnet tester
+/// thanks, see deploy/azure/pay-testers.sh).
 /// The token is sent to our server, which verifies it with the Pi Platform
 /// API (`GET /v2/me`); the client never decides who the user is.
 ///
@@ -56,10 +58,10 @@ Future<String> piAuthenticate({required bool sandbox}) async {
     _pi.init({'version': '2.0', 'sandbox': sandbox}.jsify()! as JSObject);
     _initialized = true;
   }
-  // This game has no payments, but the SDK requires the callback.
+  // The game never asks players to pay; the SDK still requires the callback.
   void onIncompletePaymentFound(JSAny? payment) {}
   final auth = await _pi
-      .authenticate(['username'.toJS].toJS, onIncompletePaymentFound.toJS)
+      .authenticate(['username'.toJS, 'payments'.toJS].toJS, onIncompletePaymentFound.toJS)
       .toDart;
   return auth.accessToken;
 }
