@@ -29,14 +29,16 @@
   <h2>What we collect</h2>
   <table>
     <tr><th>Information</th><th>Where it comes from</th><th>Why</th></tr>
-    <tr><td>Your Pi username and Pi user ID</td><td>Pi Network, when you sign in with the Pi SDK (scope: <code>username</code>)</td><td>To show your name on the Hall of Fame and keep your records together</td></tr>
+    <tr><td>Your Pi username and Pi user ID</td><td>Pi Network, when you sign in with the Pi SDK (scopes: <code>username</code>, <code>payments</code>)</td><td>To show your name on the Hall of Fame and keep your records together</td></tr>
     <tr><td>Guest name</td><td>You, when you choose <em>Play as Guest</em></td><td>Same as above, for players outside the Pi Browser</td></tr>
     <tr><td>Scores and play history</td><td>The game</td><td>Best height, number of climbs, total meters pushed, and when you last played — used for the ranking</td></tr>
     <tr><td>Current height while climbing</td><td>The game, about once per second</td><td>To show other players who is climbing right now</td></tr>
   </table>
 
   <p>We do <strong>not</strong> collect your email address, phone number, wallet address, location, contacts, or
-    payment information. Sisyphusball has no in-app purchases and does not use Pi payments.</p>
+    payment information. Sisyphusball has no in-app purchases and never asks you to pay. The <code>payments</code>
+    scope only lets us send you Pi (for example a small thank-you to testers); such a transfer goes through
+    Pi Network to your Pi wallet, and we keep only its payment ID.</p>
 
   <h2>What other players can see</h2>
   <p>Your username (or guest name), your best height, your title and your number of climbs appear on the public
@@ -52,7 +54,7 @@
     Pi Network API only to confirm your username and user ID. We do not store the token.</p>
 
   <h2>Where the data is kept</h2>
-  <p>Records are stored on our game server, hosted by Fly.io. Server logs may briefly record a username when a
+  <p>Records are stored on our game server, hosted on Microsoft Azure. Server logs may briefly record a username when a
     personal best is set. We do not sell or share your information with anyone.</p>
 
   <h2>How long we keep it</h2>

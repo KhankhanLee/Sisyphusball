@@ -11,6 +11,8 @@ build/
 /server/data/
 /deploy/azure/data/
 /deploy/azure/data-testnet/
+/deploy/azure/a2u.env
+/deploy/azure/a2u/node_modules/
 /data/
 .env
 *.log
