@@ -25,11 +25,22 @@ class ScreenModel extends ChangeNotifier implements Observer<AppEvent> {
   /// The recorded result of the last solo climb; null while it is recorded.
   RunResult? lastResult;
 
+  /// Carving words for the last climb: in progress, or done.
+  bool carving = false, carved = false;
+
+  void setCarving({required bool carving, bool carved = false}) {
+    this.carving = carving;
+    this.carved = carved;
+    notifyListeners();
+  }
+
   @override
   void onEvent(AppEvent event) {
     switch (event) {
       case RunStarted(:final mode):
         lastResult = null;
+        carving = false;
+        carved = false;
         screen = mode == GameMode.versus ? Screen.versus : Screen.solo;
       case RunEnded(:final mode, :final scores):
         lastScores = scores;

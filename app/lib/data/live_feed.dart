@@ -9,8 +9,8 @@ import 'api_client.dart';
 import 'models.dart';
 
 /// The server's WebSocket feed as a [Subject]: announces [BoardUpdated]
-/// after every finished climb anywhere, and [PresenceUpdated] as people
-/// climb. Reconnects on its own when the connection drops.
+/// after every finished climb anywhere, [PresenceUpdated] as people climb,
+/// and [CarvingsUpdated] when someone carves the mountain. Reconnects on its own when the connection drops.
 class LiveFeed with Subject<AppEvent> {
   LiveFeed({this.retryDelay = const Duration(seconds: 3)});
 
@@ -52,6 +52,10 @@ class LiveFeed with Subject<AppEvent> {
         notify(PresenceUpdated(
           [for (final c in msg['climbers'] as List) LiveClimber.fromJson(c as Map<String, dynamic>)],
           msg['count'] as int? ?? 0,
+        ));
+      case 'carvings':
+        notify(CarvingsUpdated(
+          [for (final c in msg['carvings'] as List) Carving.fromJson(c as Map<String, dynamic>)],
         ));
     }
   }

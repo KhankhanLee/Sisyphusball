@@ -8,18 +8,26 @@ import 'package:shelf_static/shelf_static.dart';
 
 import 'src/auth/auth_service.dart';
 import 'src/auth/auth_strategy.dart';
+import 'src/carvings/carving_service.dart';
+import 'src/carvings/carving_store.dart';
 import 'src/config.dart';
 import 'src/http/api_routes.dart';
 import 'src/http/client_log.dart';
 import 'src/http/middleware.dart';
 import 'src/live/observers.dart';
+import 'src/payments/pi_payments.dart';
 import 'src/runs/run_registry.dart';
 import 'src/scores/score_repository.dart';
 import 'src/scores/score_service.dart';
 
 export 'src/auth/auth_strategy.dart' show PiTokenVerifier;
 export 'src/auth/identity.dart';
+export 'src/carvings/carving.dart';
+export 'src/carvings/carving_service.dart';
+export 'src/carvings/carving_store.dart';
+export 'src/payments/pi_payments.dart';
 export 'src/config.dart';
+export 'src/http/http_error.dart' show HttpError;
 export 'src/events.dart';
 export 'src/runs/presence.dart';
 export 'src/runs/run_registry.dart' show RunRegistry, maxReachableScore;
@@ -32,12 +40,15 @@ export 'src/scores/score_service.dart';
 ///   subjects            observers
 ///   ─────────────       ──────────────────────────────
 ///   ScoreService   ──┬─▶ LiveClient (one per socket) ×N
-///   RunRegistry    ──┘   ActivityLog (ScoreService only)
+///   RunRegistry    ──┤   ActivityLog (ScoreService only)
+///   CarvingService ──┘
 class SisyphusServer {
   SisyphusServer({
     required this.config,
     required ScoreRepository repository,
     PiTokenVerifier? verifyPiToken,
+    CarvingStore? carvingStore,
+    PiPayments? payments,
     IOSink? log,
   })  : _log = log,
         scores = ScoreService(repository, boardSize: config.leaderboardSize),
@@ -48,6 +59,13 @@ class SisyphusServer {
               : PiAuthStrategy.platformApi(apiBase: config.piApiBase),
           if (config.allowGuests) GuestAuthStrategy(),
         ]) {
+    carvings = CarvingService(
+      carvingStore ?? CarvingStore(),
+      payments ??
+          (config.piApiKey.isEmpty ? null : PiPaymentsApi(apiBase: config.piApiBase, apiKey: config.piApiKey)),
+      price: config.carvePrice,
+      bestOf: (uid) => scores.standingOf(uid).best,
+    );
     scores.attach(ActivityLog(log));
   }
 
@@ -56,9 +74,10 @@ class SisyphusServer {
   final ScoreService scores;
   final RunRegistry runs;
   final AuthService auth;
+  late final CarvingService carvings;
 
   Handler get handler {
-    final api = ApiRoutes(config: config, auth: auth, scores: scores, runs: runs, clientLog: ClientLog(_log));
+    final api = ApiRoutes(config: config, auth: auth, scores: scores, runs: runs, carvings: carvings, clientLog: ClientLog(_log));
     var cascade = Cascade().add(api.router.call);
     final webDir = config.webDir;
     if (webDir != null && Directory(webDir).existsSync()) {
@@ -75,6 +94,7 @@ class SisyphusServer {
   void close() {
     runs.dispose();
     scores.detachAll();
+    carvings.detachAll();
   }
 }
 

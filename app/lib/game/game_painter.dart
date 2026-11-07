@@ -22,7 +22,11 @@ class GamePainter extends CustomPainter {
     if (lanes.length == 1) {
       final w = min(size.width, 480.0);
       _LanePainter(canvas, Rect.fromLTWH((size.width - w) / 2, 0, w, size.height), lanes.first)
-          .paint(ghosts: overlay.ghosts, markers: overlay.markers, figure: const Color(0xFFEFE6D8));
+          .paint(
+              ghosts: overlay.ghosts,
+              markers: overlay.markers,
+              engravings: overlay.engravings,
+              figure: const Color(0xFFEFE6D8));
       return;
     }
     final w = size.width / lanes.length;
@@ -66,7 +70,12 @@ class _LanePainter {
 
   double toScreen(double y) => anchorY - (y - lane.cameraY) * scale;
 
-  void paint({List<Ghost> ghosts = const [], List<Marker> markers = const [], required Color figure}) {
+  void paint({
+    List<Ghost> ghosts = const [],
+    List<Marker> markers = const [],
+    List<Engraving> engravings = const [],
+    required Color figure,
+  }) {
     canvas
       ..save()
       ..clipRect(rect)
@@ -75,6 +84,7 @@ class _LanePainter {
     _path();
     _ground();
     _heightTicks();
+    _engravings(engravings);
     _markers(markers);
     _rocks();
     _ghosts(ghosts);
@@ -144,6 +154,22 @@ class _LanePainter {
         canvas.drawLine(Offset(x, sy), Offset(min(x + 6, pathRight), sy), paint);
       }
       _text(mk.label, Offset(pathRight - 4, sy - 9), Color(mk.color), align: TextAlign.right);
+    }
+  }
+
+  /// Carved words, cut into the left wall of the path at their height. When
+  /// several share a height, only the newest few are shown.
+  void _engravings(List<Engraving> engravings) {
+    final perHeight = <int, int>{};
+    final ink = const Color(0xB3C9B79C);
+    final groove = Paint()..color = const Color(0x40C9B79C);
+    for (final e in engravings.reversed) {
+      if (e.height < lo || e.height > hi) continue;
+      final slot = perHeight.update(e.height.round(), (n) => n + 1, ifAbsent: () => 0);
+      if (slot > 2) continue;
+      final sy = toScreen(e.height) - slot * (fontSize + 6);
+      canvas.drawRect(Rect.fromLTWH(pathLeft, sy, 3, fontSize + 2), groove);
+      _text('“${e.text}” — ${e.author}', Offset(pathLeft + 8, sy + fontSize / 2 + 1), ink, italic: true);
     }
   }
 
@@ -231,14 +257,22 @@ class _LanePainter {
     }
   }
 
-  void _text(String text, Offset at, Color color, {TextAlign align = TextAlign.left, double? size, bool bold = false}) {
+  void _text(String text, Offset at, Color color,
+      {TextAlign align = TextAlign.left, double? size, bool bold = false, bool italic = false}) {
     final tp = TextPainter(
       text: TextSpan(
         text: text,
-        style: TextStyle(fontSize: size ?? fontSize, color: color, fontWeight: bold ? FontWeight.bold : null),
+        style: TextStyle(
+          fontSize: size ?? fontSize,
+          color: color,
+          fontWeight: bold ? FontWeight.bold : null,
+          fontStyle: italic ? FontStyle.italic : null,
+        ),
       ),
       textDirection: TextDirection.ltr,
-    )..layout();
+      maxLines: 1,
+      ellipsis: '…',
+    )..layout(maxWidth: pathRight - pathLeft - 12);
     final dx = switch (align) {
       TextAlign.right => at.dx - tp.width,
       TextAlign.center => at.dx - tp.width / 2,

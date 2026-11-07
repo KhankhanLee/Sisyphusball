@@ -134,6 +134,21 @@ Mainnet 앱은 Testnet 앱과 별개의 앱이라 **자기 도메인**이 따로
 
 ---
 
+### Carve the Mountain (Pi 결제) 켜기
+
+유저가 1π를 내고 산에 글귀를 새기는 기능입니다. 앱의 **Server API Key**가 있어야 켜집니다 (없으면 버튼이 안 보임).
+결제는 앱 지갑으로 들어가므로, 앱 지갑이 연결된 앱에서만 됩니다 (지금은 Testnet).
+
+```bash
+cd ~/Sisyphusball/deploy/azure
+# Testnet 앱의 API Key (포털 → Testnet 앱 → API Key)
+grep -q '^TESTNET_PI_API_KEY=' .env || echo 'TESTNET_PI_API_KEY=' >> .env
+sed -i "s|^TESTNET_PI_API_KEY=.*|TESTNET_PI_API_KEY=<키>|" .env
+sudo docker compose up -d
+```
+Mainnet 앱 지갑이 승인되면 같은 방법으로 `PI_API_KEY=<Mainnet 앱 키>`를 넣으면 Mainnet에서도 켜집니다.
+새긴 글귀는 `data/carvings.json` (Testnet은 `data-testnet/carvings.json`)에 저장됩니다.
+
 ### Testnet 테스터에게 A2U 보내기 (Mainnet 앱 지갑 조건)
 
 포털은 Mainnet 앱 지갑을 주기 전에 **Testnet 앱이 서로 다른 5명에게 App-to-User 송금**을 했는지 봅니다.

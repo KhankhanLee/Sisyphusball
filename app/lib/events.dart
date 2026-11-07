@@ -77,3 +77,10 @@ final class PresenceUpdated extends AppEvent {
   final List<LiveClimber> climbers;
   final int count;
 }
+
+/// The words carved into the mountain changed.
+final class CarvingsUpdated extends AppEvent {
+  const CarvingsUpdated(this.carvings);
+
+  final List<Carving> carvings;
+}
