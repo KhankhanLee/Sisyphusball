@@ -8,6 +8,8 @@ import 'data/diagnostics.dart';
 import 'game/game_controller.dart';
 import 'game/game_view.dart';
 import 'models/screen_model.dart';
+import 'payments/payment.dart';
+import 'ui/screens/carve_dialog.dart';
 import 'ui/screens/guest_name_dialog.dart';
 import 'ui/screens/hall_of_fame_screen.dart';
 import 'ui/screens/huds.dart';
@@ -75,6 +77,26 @@ class _GameShellState extends State<GameShell> {
 
   void _openPage(String path) => launchUrl(serverBase.resolve(path)).ignore();
 
+  Future<void> _carve() async {
+    final price = s.carvings.price;
+    final height = s.screens.lastScores.first;
+    if (price == null) return;
+    final text = await showCarveDialog(context, height: height, price: price);
+    if (text == null || !mounted) return;
+    s.screens.setCarving(carving: true);
+    final outcome = await s.carve.carve(text: text, height: height, price: price);
+    s.screens.setCarving(carving: false, carved: outcome == PaymentOutcome.completed);
+    diagnostics.report('carve', outcome.name);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(switch (outcome) {
+        PaymentOutcome.completed => Copy.carved,
+        PaymentOutcome.cancelled => Copy.carveCancelled,
+        PaymentOutcome.failed => Copy.carveFailed,
+      }),
+    ));
+  }
+
   void _home() {
     s.game.start(GameMode.idle);
     s.screens.showTitle();
@@ -86,7 +108,7 @@ class _GameShellState extends State<GameShell> {
       body: Stack(fit: StackFit.expand, children: [
         GameView(game: s.game, overlay: s.overlay),
         ListenableBuilder(
-          listenable: Listenable.merge([s.screens, s.player, s.leaderboard, s.presence]),
+          listenable: Listenable.merge([s.screens, s.player, s.leaderboard, s.presence, s.carvings]),
           builder: (context, _) => _screen(),
         ),
       ]),
@@ -113,6 +135,10 @@ class _GameShellState extends State<GameShell> {
             onAgain: () => _play(GameMode.solo),
             onHallOfFame: s.screens.openHallOfFame,
             onHome: _home,
+            carvePrice: s.player.player?.guest == false ? s.carvings.price : null,
+            carving: s.screens.carving,
+            carved: s.screens.carved,
+            onCarve: _carve,
           ),
         Screen.versusResult => VersusResultScreen(
             scores: s.screens.lastScores,

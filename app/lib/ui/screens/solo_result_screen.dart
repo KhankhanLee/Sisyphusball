@@ -20,6 +20,10 @@ class SoloResultScreen extends StatelessWidget {
     required this.onAgain,
     required this.onHallOfFame,
     required this.onHome,
+    this.carvePrice,
+    this.carved = false,
+    this.carving = false,
+    this.onCarve,
   });
 
   final int score;
@@ -28,6 +32,11 @@ class SoloResultScreen extends StatelessWidget {
   final int players;
   final String refrain;
   final VoidCallback onAgain, onHallOfFame, onHome;
+
+  /// Shown when set: carving words at this climb's height costs this much π.
+  final double? carvePrice;
+  final bool carved, carving;
+  final VoidCallback? onCarve;
 
   String get _verdict {
     final r = result;
@@ -56,6 +65,14 @@ class SoloResultScreen extends StatelessWidget {
             style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Palette.ink)),
       const SizedBox(height: 4),
       Text(Copy.lifetime(standing.totalMeters, standing.runs), textAlign: TextAlign.center, style: TextStyles.small),
+      if (carved)
+        const Padding(
+          padding: EdgeInsets.only(top: 10),
+          child: Text(Copy.carvedHere, style: TextStyle(color: Palette.accent, fontStyle: FontStyle.italic)),
+        )
+      else if (carvePrice != null && onCarve != null && score > 0 && result != null && result!.error == null)
+        GameButton(carving ? Copy.carving : Copy.carve,
+            hint: carving ? null : Copy.carveHintLine(carvePrice!), onPressed: carving ? null : onCarve),
       GameButton(Copy.pushAgain, primary: true, onPressed: onAgain),
       GameButton(Copy.hallOfFame, onPressed: onHallOfFame),
       GameButton(Copy.home, onPressed: onHome),

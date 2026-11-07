@@ -24,6 +24,11 @@ ThemeData buildTheme() => ThemeData(
       brightness: Brightness.dark,
       scaffoldBackgroundColor: Palette.background,
       colorScheme: const ColorScheme.dark(primary: Palette.accent),
+      snackBarTheme: const SnackBarThemeData(
+        backgroundColor: Color(0xFF2A2433),
+        contentTextStyle: TextStyle(color: Palette.ink),
+        behavior: SnackBarBehavior.floating,
+      ),
     );
 
 /// Largest text scale the game honours.

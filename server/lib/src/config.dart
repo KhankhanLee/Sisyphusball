@@ -10,6 +10,9 @@ class ServerConfig {
     this.contactEmail = '',
     this.flutterEngine = '',
     this.debugShots = false,
+    this.piApiKey = '',
+    this.carvePrice = 1,
+    this.carvingsFile,
     this.legalDir = 'legal',
     this.leaderboardSize = 50,
     this.piApiBase = 'https://api.minepi.com',
@@ -35,6 +38,9 @@ class ServerConfig {
       contactEmail: env['CONTACT_EMAIL'] ?? '',
       flutterEngine: env['FLUTTER_ENGINE'] ?? '',
       debugShots: flag('DEBUG_SHOTS', false),
+      piApiKey: env['PI_API_KEY'] ?? '',
+      carvePrice: double.tryParse(env['CARVE_PRICE'] ?? '') ?? 1,
+      carvingsFile: env['CARVINGS_FILE'] ?? _besideDataFile(env['DATA_FILE'] ?? 'data/scores.json', 'carvings.json'),
       legalDir: env['LEGAL_DIR'] ?? 'legal',
       piApiBase: env['PI_API_BASE'] ?? 'https://api.minepi.com',
       dataFile: env['DATA_FILE'] ?? 'data/scores.json',
@@ -61,6 +67,16 @@ class ServerConfig {
   /// Lets the app upload a screenshot of its own rendering (debugging).
   final bool debugShots;
 
+  /// The app's server API key from the Pi Developer Portal. Enables
+  /// "Carve the Mountain" (Pi payments); empty turns it off.
+  final String piApiKey;
+
+  /// What one carving costs, in π.
+  final double carvePrice;
+
+  /// Where carvings are persisted; null keeps them in memory only.
+  final String? carvingsFile;
+
   /// Where privacy.html and terms.html live.
   final String legalDir;
   final int leaderboardSize;
@@ -71,4 +87,9 @@ class ServerConfig {
 
   /// The Flutter web build (`app/build/web`) to serve, if any.
   final String? webDir;
+}
+
+String _besideDataFile(String dataFile, String name) {
+  final slash = dataFile.lastIndexOf('/');
+  return slash == -1 ? name : '${dataFile.substring(0, slash + 1)}$name';
 }

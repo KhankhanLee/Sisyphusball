@@ -23,6 +23,8 @@ services:
       DATA_FILE: /data/scores.json
       # The Testnet app in the Pi Developer Portal has its own key.
       PI_VALIDATION_KEY: ${TESTNET_PI_VALIDATION_KEY:-}
+      # ...and its own server API key (Carve the Mountain payments).
+      PI_API_KEY: ${TESTNET_PI_API_KEY:-}
     volumes:
       - ./data-testnet:/data
     expose:

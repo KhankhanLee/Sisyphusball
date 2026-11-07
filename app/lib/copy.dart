@@ -24,7 +24,7 @@ abstract final class Copy {
       '${playerName(name, isGuest: isGuest)} · $tier${best > 0 ? ' · best ${best}m' : ''}';
 
   static String worldLine(int players, int runs, int meters) =>
-      '$players ${players == 1 ? 'person has' : 'people have'} pushed ${_n(runs)} times, ${_n(meters)}m in all.\n'
+      '$players ${players == 1 ? 'person has' : 'people have'} pushed ${runs == 1 ? 'once' : '${_n(runs)} times'}, ${_n(meters)}m in all.\n'
       'Stones at the summit right now: 0';
 
   // guest sign-in
@@ -57,6 +57,28 @@ abstract final class Copy {
   static String lifetime(int meters, int runs) =>
       'You have pushed ${_n(meters)}m over $runs ${runs == 1 ? 'climb' : 'climbs'}.\n'
       'Every one of those stones is at the bottom.';
+
+  // carve the mountain (Pi payments)
+  static const carve = 'Carve the Mountain';
+  static const carveTitle = 'Carve the Mountain';
+  static const carveBody = 'Your stone has already rolled back. Your words will stay here, '
+      'for every Pioneer who climbs past.';
+  static const carveHint = 'A few words for the mountain';
+  static const carveRules = 'Up to 40 characters. No links. It never changes your score.';
+  static const carveCancel = 'Not now';
+  static const carving = 'Waiting for your Pi wallet…';
+  static const carved = 'Carved. The stone fell; the words stay.';
+  static const carveCancelled = 'Nothing was carved. No Pi was spent.';
+  static const carveFailed = 'Could not carve. If Pi was spent, it will be finished at your next sign-in.';
+  static const carvedHere = 'Your words are on the mountain.';
+
+  static String carveHintLine(double price) => '${_pi(price)} · words that stay';
+
+  static String carveAt(int height) => 'At ${height}m';
+
+  static String carveFor(double price) => 'Carve for ${_pi(price)}';
+
+  static String _pi(double price) => '${price == price.roundToDouble() ? price.toInt() : price}π';
 
   // after a 2P round
   static const versusRefrain = 'Both stones have rolled back to the bottom.';

@@ -8,11 +8,13 @@ import 'data/live_feed.dart';
 import 'data/models.dart';
 import 'data/run_reporter.dart';
 import 'game/game_controller.dart';
+import 'models/carvings_model.dart';
 import 'models/leaderboard_model.dart';
 import 'models/player_model.dart';
 import 'models/presence_model.dart';
 import 'models/scene_overlay_model.dart';
 import 'models/screen_model.dart';
+import 'payments/carve_service.dart';
 import 'pi/pi_sdk.dart';
 
 /// Composition root: creates every service and model once and wires the
@@ -23,9 +25,9 @@ import 'pi/pi_sdk.dart';
 ///   GameController    →  RunReporter, ScreenModel, AdBreaks
 ///   RunReporter       →  ScreenModel, PlayerModel, LeaderboardModel, PresenceModel
 ///   AuthService       →  PlayerModel, Diagnostics (when given)
-///   LiveFeed          →  LeaderboardModel, PresenceModel
+///   LiveFeed          →  LeaderboardModel, PresenceModel, CarvingsModel
 ///
-/// Four subjects, six observers, and most observers listen to more than
+/// Four subjects, seven observers, and most observers listen to more than
 /// one subject: n:m.
 class AppServices {
   AppServices({
@@ -34,12 +36,14 @@ class AppServices {
     ApiClient? api,
     Diagnostics? diagnostics,
     ShowAd? showAd,
+    PayWithPi? pay,
   }) : api = api ?? ApiClient() {
     game = GameController();
     feed = LiveFeed();
     auth = AuthService(this.api, authStrategies ?? [const PiAuthStrategy(), GuestAuthStrategy(askGuestName)]);
     reporter = RunReporter(this.api, currentHeight: () => game.height);
-    overlay = SceneOverlayModel(player: player, leaderboard: leaderboard, presence: presence);
+    overlay = SceneOverlayModel(player: player, leaderboard: leaderboard, presence: presence, carvings: carvings);
+    carve = CarveService(this.api, pay ?? piPay);
     ads = AdBreaks(showAd ?? piShowInterstitial, onResult: (r) => diagnostics?.report('ad', r));
 
     game
@@ -55,7 +59,8 @@ class AppServices {
     if (diagnostics != null) auth.attach(diagnostics);
     feed
       ..attach(leaderboard)
-      ..attach(presence);
+      ..attach(presence)
+      ..attach(carvings);
   }
 
   final ApiClient api;
@@ -67,12 +72,14 @@ class AppServices {
   late final RunReporter reporter;
 
   late final AdBreaks ads;
+  late final CarveService carve;
 
   // observers (UI state)
   final screens = ScreenModel();
   final player = PlayerModel();
   final leaderboard = LeaderboardModel();
   final presence = PresenceModel();
+  final carvings = CarvingsModel();
   late final SceneOverlayModel overlay;
 
   /// Connects to the live feed, loads the server settings and signs in.
@@ -86,7 +93,9 @@ class AppServices {
       return;
     }
     game.seed = settings.seed;
+    carvings.setPrice(settings.carvePrice);
     await auth.signIn(settings);
+    if (player.signedIn) await carve.settle(takePendingPayment());
   }
 
   void dispose() {
@@ -97,7 +106,7 @@ class AppServices {
     game
       ..detachAll()
       ..dispose();
-    for (final model in [screens, player, leaderboard, presence]) {
+    for (final model in [screens, player, leaderboard, presence, carvings]) {
       model.dispose();
     }
   }

@@ -1,3 +1,4 @@
+import 'carvings/carving.dart';
 import 'scores/score_models.dart';
 import 'runs/presence.dart';
 
@@ -29,4 +30,11 @@ final class PersonalBest extends ServerEvent {
   final String username;
   final int score;
   final int? rank;
+}
+
+/// Someone carved words into the mountain.
+final class CarvingsChanged extends ServerEvent {
+  const CarvingsChanged(this.carvings);
+
+  final List<Carving> carvings;
 }

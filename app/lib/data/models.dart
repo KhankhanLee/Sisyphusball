@@ -2,16 +2,21 @@
 library;
 
 class ServerSettings {
-  const ServerSettings({required this.sandbox, required this.allowGuests, required this.seed});
+  const ServerSettings({required this.sandbox, required this.allowGuests, required this.seed, this.carvePrice});
 
   ServerSettings.fromJson(Map<String, dynamic> j)
       : sandbox = j['sandbox'] as bool? ?? true,
         allowGuests = j['allowGuest'] as bool? ?? false,
-        seed = j['seed'] as int;
+        seed = j['seed'] as int,
+        carvePrice = (j['carvePrice'] as num?)?.toDouble();
 
   final bool sandbox;
   final bool allowGuests;
   final int seed;
+
+  /// What carving words into the mountain costs, in π; null when the server
+  /// does not take payments.
+  final double? carvePrice;
 }
 
 class Player {
@@ -95,4 +100,18 @@ class RunResult {
 
   /// Set when the climb could not be recorded.
   final String? error;
+}
+
+/// Words a player paid to leave on the mountain.
+class Carving {
+  const Carving({required this.username, required this.height, required this.text});
+
+  Carving.fromJson(Map<String, dynamic> j)
+      : username = j['username'] as String,
+        height = j['height'] as int,
+        text = j['text'] as String;
+
+  final String username;
+  final int height;
+  final String text;
 }

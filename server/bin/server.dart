@@ -9,11 +9,14 @@ Future<void> main() async {
   final repository = dataFile == null ? InMemoryScoreRepository() : JsonFileScoreRepository(dataFile);
   await repository.load();
 
-  final app = SisyphusServer(config: config, repository: repository);
+  final carvings = CarvingStore(path: config.carvingsFile);
+  await carvings.load();
+
+  final app = SisyphusServer(config: config, repository: repository, carvingStore: carvings);
   final server = await io.serve(app.handler, InternetAddress.anyIPv4, config.port);
   allowEmbeddingInPiBrowser(server);
   stdout.writeln('Sisyphusball on http://localhost:${server.port} '
-      '(sandbox=${config.sandbox}, guests=${config.allowGuests})');
+      '(sandbox=${config.sandbox}, guests=${config.allowGuests}, payments=${config.piApiKey.isNotEmpty})');
 
   Future<void> shutdown(ProcessSignal _) async {
     app.close();

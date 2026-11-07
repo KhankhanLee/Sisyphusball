@@ -41,6 +41,10 @@ class LiveClient implements Observer<ServerEvent> {
     final message = switch (event) {
       LeaderboardChanged(:final leaderboard) => {'type': 'board', ...leaderboard.toJson()},
       PresenceChanged(:final presence) => {'type': 'live', ...presence.toJson()},
+      CarvingsChanged(:final carvings) => {
+          'type': 'carvings',
+          'carvings': [for (final c in carvings) c.toPublicJson()],
+        },
       PersonalBest() => null,
     };
     if (message != null) _socket.sink.add(jsonEncode(message));

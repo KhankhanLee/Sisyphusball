@@ -6,6 +6,7 @@ import 'package:shelf_web_socket/shelf_web_socket.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../auth/auth_service.dart';
+import '../carvings/carving_service.dart';
 import '../config.dart';
 import '../events.dart';
 import '../live/observers.dart';
@@ -26,7 +27,10 @@ import 'middleware.dart';
 ///   POST /api/runs                 (bearer) → {runId, seed}
 ///   POST /api/runs/{id}/progress   (bearer) {height}
 ///   POST /api/runs/{id}/finish     (bearer) {score}
-///   GET  /ws                       live feed: {"type":"board"|"live", ...}
+///   GET  /api/carvings             words carved into the mountain
+///   POST /api/payments/approve     (bearer) {paymentId}        Carve the Mountain
+///   POST /api/payments/complete    (bearer) {paymentId, txid}
+///   GET  /ws                       live feed: {"type":"board"|"live"|"carvings", ...}
 ///   POST /api/client-log           {event, detail, ua} from browsers, logged
 ///   GET  /api/engine               Flutter engine settings (FLUTTER_ENGINE)
 ///   POST /api/debug/shot, GET /api/debug/shot.png   app self-screenshot (DEBUG_SHOTS)
@@ -37,6 +41,7 @@ class ApiRoutes {
     required this.auth,
     required this.scores,
     required this.runs,
+    required this.carvings,
     ClientLog? clientLog,
   })  : legal = LegalPages(directory: config.legalDir, contactEmail: config.contactEmail),
         clientLog = clientLog ?? ClientLog(),
@@ -46,6 +51,7 @@ class ApiRoutes {
   final AuthService auth;
   final ScoreService scores;
   final RunRegistry runs;
+  final CarvingService carvings;
   final LegalPages legal;
   final ClientLog clientLog;
   final DebugShots debugShots;
@@ -58,6 +64,9 @@ class ApiRoutes {
     ..post('/api/runs', _startRun)
     ..post('/api/runs/<id>/progress', _progress)
     ..post('/api/runs/<id>/finish', _finish)
+    ..get('/api/carvings', _carvings)
+    ..post('/api/payments/approve', _approvePayment)
+    ..post('/api/payments/complete', _completePayment)
     ..post('/api/client-log', clientLog.handle)
     ..get('/api/engine', _engine)
     ..post('/api/debug/shot', debugShots.upload)
@@ -74,6 +83,7 @@ class ApiRoutes {
         'allowGuest': config.allowGuests,
         'seed': config.seed,
         if (config.debugShots) 'debugShots': true,
+        if (carvings.enabled) 'carvePrice': config.carvePrice,
       });
 
   Future<Response> _signIn(Request req) async {
@@ -127,6 +137,25 @@ class ApiRoutes {
     });
   }
 
+  Response _carvings(Request _) => jsonResponse({'carvings': [for (final c in carvings.carvings) c.toPublicJson()]});
+
+  Future<Response> _approvePayment(Request req) async {
+    final who = auth.requireSession(req.headers['authorization']);
+    final id = (await readJson(req))['paymentId'];
+    if (id is! String || id.isEmpty) throw HttpError(400, 'paymentId required');
+    await carvings.approve(who, id);
+    return jsonResponse({'ok': true});
+  }
+
+  Future<Response> _completePayment(Request req) async {
+    final who = auth.requireSession(req.headers['authorization']);
+    final body = await readJson(req);
+    final id = body['paymentId'], txid = body['txid'];
+    if (id is! String || id.isEmpty || txid is! String || txid.isEmpty) throw HttpError(400, 'paymentId and txid required');
+    final carving = await carvings.complete(who, id, txid);
+    return jsonResponse({'carving': carving?.toPublicJson()});
+  }
+
   Response _validationKey(Request _) {
     if (config.validationKey.isEmpty) throw HttpError(404, 'not found');
     return Response.ok(config.validationKey, headers: {'Content-Type': 'text/plain'});
@@ -136,8 +165,12 @@ class ApiRoutes {
   void _onSocket(WebSocketChannel socket, String? _) {
     LiveClient.connect(
       socket,
-      subjects: [scores, runs],
-      initial: [LeaderboardChanged(scores.leaderboard()), PresenceChanged(runs.presence())],
+      subjects: [scores, runs, carvings],
+      initial: [
+        LeaderboardChanged(scores.leaderboard()),
+        PresenceChanged(runs.presence()),
+        CarvingsChanged(carvings.carvings),
+      ],
     );
   }
 }
