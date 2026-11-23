@@ -15,6 +15,8 @@ import 'src/http/api_routes.dart';
 import 'src/http/client_log.dart';
 import 'src/http/middleware.dart';
 import 'src/live/observers.dart';
+import 'src/nicknames/nickname_service.dart';
+import 'src/nicknames/nickname_store.dart';
 import 'src/payments/pi_payments.dart';
 import 'src/runs/run_registry.dart';
 import 'src/scores/score_repository.dart';
@@ -25,6 +27,8 @@ export 'src/auth/identity.dart';
 export 'src/carvings/carving.dart';
 export 'src/carvings/carving_service.dart';
 export 'src/carvings/carving_store.dart';
+export 'src/nicknames/nickname_service.dart';
+export 'src/nicknames/nickname_store.dart';
 export 'src/payments/pi_payments.dart';
 export 'src/config.dart';
 export 'src/http/http_error.dart' show HttpError;
@@ -49,16 +53,23 @@ class SisyphusServer {
     PiTokenVerifier? verifyPiToken,
     CarvingStore? carvingStore,
     PiPayments? payments,
+    NicknameStore? nicknameStore,
     IOSink? log,
   })  : _log = log,
         scores = ScoreService(repository, boardSize: config.leaderboardSize),
-        runs = RunRegistry(),
-        auth = AuthService([
-          verifyPiToken != null
-              ? PiAuthStrategy(verifyPiToken)
-              : PiAuthStrategy.platformApi(apiBase: config.piApiBase),
-          if (config.allowGuests) GuestAuthStrategy(),
-        ]) {
+        runs = RunRegistry() {
+    nicknames = NicknameService(
+      nicknameStore ?? NicknameStore(),
+      enabled: config.nicknames,
+      nameTakenElsewhere: scores.usernameTakenElsewhere,
+    );
+    auth = AuthService(
+      [
+        verifyPiToken != null ? PiAuthStrategy(verifyPiToken) : PiAuthStrategy.platformApi(apiBase: config.piApiBase),
+        if (config.allowGuests) GuestAuthStrategy(),
+      ],
+      personalize: nicknames.personalize,
+    );
     carvings = CarvingService(
       carvingStore ?? CarvingStore(),
       payments ??
@@ -73,11 +84,19 @@ class SisyphusServer {
   final IOSink? _log;
   final ScoreService scores;
   final RunRegistry runs;
-  final AuthService auth;
+  late final AuthService auth;
+  late final NicknameService nicknames;
   late final CarvingService carvings;
 
   Handler get handler {
-    final api = ApiRoutes(config: config, auth: auth, scores: scores, runs: runs, carvings: carvings, clientLog: ClientLog(_log));
+    final api = ApiRoutes(
+        config: config,
+        auth: auth,
+        scores: scores,
+        runs: runs,
+        carvings: carvings,
+        nicknames: nicknames,
+        clientLog: ClientLog(_log));
     var cascade = Cascade().add(api.router.call);
     final webDir = config.webDir;
     if (webDir != null && Directory(webDir).existsSync()) {

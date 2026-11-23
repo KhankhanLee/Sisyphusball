@@ -44,6 +44,22 @@ class ScoreService with Subject<ServerEvent> {
     return (isBest: isBest, standing: standing);
   }
 
+  /// Shows [uid] as [username] on the board from now on.
+  void rename(String uid, String username) {
+    final player = _repository.find(uid);
+    if (player == null || player.username == username) return;
+    player.username = username;
+    _repository.save(player);
+    _ranking = null;
+    notify(LeaderboardChanged(leaderboard()));
+  }
+
+  /// Whether a player other than [uid] already shows [username] (any case).
+  bool usernameTakenElsewhere(String username, String uid) {
+    final key = username.toLowerCase();
+    return _repository.players.any((p) => p.uid != uid && p.username.toLowerCase() == key);
+  }
+
   Leaderboard leaderboard() => Leaderboard(_ranked.take(boardSize).toList(), _repository.totals);
 
   Standing standingOf(String uid) {

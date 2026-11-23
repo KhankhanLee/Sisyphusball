@@ -149,6 +149,12 @@ sudo docker compose up -d
 Mainnet 앱 지갑이 승인되면 같은 방법으로 `PI_API_KEY=<Mainnet 앱 키>`를 넣으면 Mainnet에서도 켜집니다.
 새긴 글귀는 `data/carvings.json` (Testnet은 `data-testnet/carvings.json`)에 저장됩니다.
 
+### 닉네임
+
+`NICKNAMES=true`이면 Pi 유저는 처음 로그인할 때 닉네임을 정하고, 랭킹·실시간 접속자·글귀에는 Pi 아이디 대신 닉네임이 보입니다.
+지금은 Testnet 컨테이너에만 켜져 있습니다 (docker-compose.yml). Mainnet에서도 켜려면 `.env`에 `NICKNAMES=true`를 추가하고 `sudo docker compose up -d`.
+닉네임은 `data/nicknames.json` (Testnet은 `data-testnet/nicknames.json`)에 저장됩니다.
+
 ### Testnet 테스터에게 A2U 보내기 (Mainnet 앱 지갑 조건)
 
 포털은 Mainnet 앱 지갑을 주기 전에 **Testnet 앱이 서로 다른 5명에게 App-to-User 송금**을 했는지 봅니다.
