@@ -12,6 +12,7 @@ import 'payments/payment.dart';
 import 'ui/screens/carve_dialog.dart';
 import 'ui/screens/guest_name_dialog.dart';
 import 'ui/screens/hall_of_fame_screen.dart';
+import 'ui/screens/nickname_dialog.dart';
 import 'ui/screens/huds.dart';
 import 'ui/screens/solo_result_screen.dart';
 import 'ui/screens/title_screen.dart';
@@ -61,17 +62,47 @@ class GameShell extends StatefulWidget {
 class _GameShellState extends State<GameShell> {
   late final AppServices s = widget.services ?? AppServices(askGuestName: () => showGuestNameDialog(context), diagnostics: diagnostics);
 
+  bool _askingNickname = false;
+
   @override
   void initState() {
     super.initState();
+    s.player.addListener(_askNicknameIfNeeded);
     if (widget.services == null) WidgetsBinding.instance.addPostFrameCallback((_) => s.start());
   }
 
   @override
   void dispose() {
+    s.player.removeListener(_askNicknameIfNeeded);
     if (widget.services == null) s.dispose();
     super.dispose();
   }
+
+  /// A Pi player without a nickname picks one before playing.
+  void _askNicknameIfNeeded() {
+    if (_askingNickname || !s.player.needsNickname) return;
+    _askingNickname = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (mounted) await _editNickname(required: true);
+      _askingNickname = false;
+    });
+  }
+
+  Future<void> _editNickname({bool required = false}) => showNicknameDialog(
+        context,
+        required: required,
+        initial: required ? '' : s.player.username,
+        save: (name) async {
+          try {
+            await s.auth.setNickname(name);
+            return null;
+          } on ApiException catch (e) {
+            return e.message;
+          } catch (_) {
+            return Copy.signInFailed;
+          }
+        },
+      );
 
   void _play(GameMode mode) => s.game.start(mode);
 
@@ -123,6 +154,7 @@ class _GameShellState extends State<GameShell> {
             onVersus: () => _play(GameMode.versus),
             onHallOfFame: s.screens.openHallOfFame,
             onOpenPage: _openPage,
+            onChangeNickname: _editNickname,
           ),
         Screen.solo => SoloHud(game: s.game, player: s.player, presence: s.presence),
         Screen.versus => VersusHud(game: s.game),

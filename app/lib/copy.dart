@@ -33,6 +33,16 @@ abstract final class Copy {
   static const guestNameHint = 'Your name';
   static const guestStart = 'Start';
 
+  // nickname
+  static const nicknameTitle = 'Choose your name';
+  static const nicknameBody = 'This is the name other Pioneers see on the mountain and in the Hall of Fame. '
+      'Your Pi username stays private.';
+  static const nicknameHint = 'Nickname';
+  static const nicknameRules = '2–16 letters, numbers, spaces, _ or -.';
+  static const nicknameSave = 'Save';
+  static const nicknameCancel = 'Cancel';
+  static const changeNickname = 'Change name';
+
   // in-game
   static String hudLine(String tier, int best) => '$tier · best ${best}m';
 

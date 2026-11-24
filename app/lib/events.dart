@@ -18,6 +18,13 @@ final class SignedIn extends AppEvent {
   final Standing standing;
 }
 
+/// The player chose (or changed) their nickname.
+final class NicknameChanged extends AppEvent {
+  const NicknameChanged(this.player);
+
+  final Player player;
+}
+
 final class SignInFailed extends AppEvent {
   const SignInFailed(this.reason);
 

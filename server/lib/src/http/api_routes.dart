@@ -6,8 +6,10 @@ import 'package:shelf_web_socket/shelf_web_socket.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../auth/auth_service.dart';
+import '../auth/identity.dart';
 import '../carvings/carving_service.dart';
 import '../config.dart';
+import '../nicknames/nickname_service.dart';
 import '../events.dart';
 import '../live/observers.dart';
 import '../runs/run_registry.dart';
@@ -23,6 +25,7 @@ import 'middleware.dart';
 ///   GET  /api/config               {sandbox, allowGuest, seed}
 ///   POST /api/auth                 {accessToken} | {guest, name}
 ///   GET  /api/me                   (bearer)
+///   POST /api/me/nickname          (bearer) {nickname}         (NICKNAMES)
 ///   GET  /api/leaderboard
 ///   POST /api/runs                 (bearer) → {runId, seed}
 ///   POST /api/runs/{id}/progress   (bearer) {height}
@@ -42,6 +45,7 @@ class ApiRoutes {
     required this.scores,
     required this.runs,
     required this.carvings,
+    required this.nicknames,
     ClientLog? clientLog,
   })  : legal = LegalPages(directory: config.legalDir, contactEmail: config.contactEmail),
         clientLog = clientLog ?? ClientLog(),
@@ -52,6 +56,7 @@ class ApiRoutes {
   final ScoreService scores;
   final RunRegistry runs;
   final CarvingService carvings;
+  final NicknameService nicknames;
   final LegalPages legal;
   final ClientLog clientLog;
   final DebugShots debugShots;
@@ -60,6 +65,7 @@ class ApiRoutes {
     ..get('/api/config', _config)
     ..post('/api/auth', _signIn)
     ..get('/api/me', _me)
+    ..post('/api/me/nickname', _setNickname)
     ..get('/api/leaderboard', _leaderboard)
     ..post('/api/runs', _startRun)
     ..post('/api/runs/<id>/progress', _progress)
@@ -84,17 +90,28 @@ class ApiRoutes {
         'seed': config.seed,
         if (config.debugShots) 'debugShots': true,
         if (carvings.enabled) 'carvePrice': config.carvePrice,
+        if (nicknames.enabled) 'nicknames': true,
       });
 
   Future<Response> _signIn(Request req) async {
     final (token, who) = await auth.signIn(await readJson(req));
-    return jsonResponse({'token': token, 'user': who.toJson(), 'standing': scores.standingOf(who.uid).toJson()});
+    return jsonResponse({'token': token, ..._userAndStanding(who)});
   }
 
-  Response _me(Request req) {
+  Response _me(Request req) => jsonResponse(_userAndStanding(auth.requireSession(req.headers['authorization'])));
+
+  Future<Response> _setNickname(Request req) async {
     final who = auth.requireSession(req.headers['authorization']);
-    return jsonResponse({'user': who.toJson(), 'standing': scores.standingOf(who.uid).toJson()});
+    final name = await nicknames.set(who, (await readJson(req))['nickname']);
+    auth.rename(who.uid, name);
+    scores.rename(who.uid, name);
+    return jsonResponse(_userAndStanding(auth.requireSession(req.headers['authorization'])));
   }
+
+  Map<String, dynamic> _userAndStanding(Identity who) => {
+        'user': {...who.toJson(), if (nicknames.needsNickname(who)) 'needsNickname': true},
+        'standing': scores.standingOf(who.uid).toJson(),
+      };
 
   /// Only the Flutter loader settings we know about pass through.
   Response _engine(Request _) {

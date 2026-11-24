@@ -94,6 +94,7 @@ class AppServices {
     }
     game.seed = settings.seed;
     carvings.setPrice(settings.carvePrice);
+    player.enableNicknames(settings.nicknames);
     await auth.signIn(settings);
     if (player.signedIn) await carve.settle(takePendingPayment());
   }

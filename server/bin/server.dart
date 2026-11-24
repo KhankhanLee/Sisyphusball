@@ -12,7 +12,15 @@ Future<void> main() async {
   final carvings = CarvingStore(path: config.carvingsFile);
   await carvings.load();
 
-  final app = SisyphusServer(config: config, repository: repository, carvingStore: carvings);
+  final nicknames = NicknameStore(path: config.nicknamesFile);
+  await nicknames.load();
+
+  final app = SisyphusServer(
+    config: config,
+    repository: repository,
+    carvingStore: carvings,
+    nicknameStore: nicknames,
+  );
   final server = await io.serve(app.handler, InternetAddress.anyIPv4, config.port);
   allowEmbeddingInPiBrowser(server);
   stdout.writeln('Sisyphusball on http://localhost:${server.port} '

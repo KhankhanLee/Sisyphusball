@@ -25,6 +25,9 @@ services:
       PI_VALIDATION_KEY: ${TESTNET_PI_VALIDATION_KEY:-}
       # ...and its own server API key (Carve the Mountain payments).
       PI_API_KEY: ${TESTNET_PI_API_KEY:-}
+      # Pi players pick a nickname shown instead of their Pi username.
+      # Trying it on Testnet first; set NICKNAMES=true in .env for Mainnet.
+      NICKNAMES: "true"
     volumes:
       - ./data-testnet:/data
     expose:

@@ -16,6 +16,7 @@ class TitleScreen extends StatelessWidget {
     required this.onVersus,
     required this.onHallOfFame,
     required this.onOpenPage,
+    this.onChangeNickname,
   });
 
   final PlayerModel player;
@@ -24,6 +25,9 @@ class TitleScreen extends StatelessWidget {
 
   /// Opens a server page such as `privacy` or `terms`.
   final void Function(String path) onOpenPage;
+
+  /// Shown under the player's name when nicknames are on.
+  final VoidCallback? onChangeNickname;
 
   String get _whoAmI => switch (player.status) {
         SignInStatus.pending => Copy.checkingAccount,
@@ -43,7 +47,10 @@ class TitleScreen extends StatelessWidget {
       const Text(Copy.tagline, style: TextStyles.muted),
       const SizedBox(height: 16),
       Text(_whoAmI, textAlign: TextAlign.center, style: TextStyles.body),
-      const SizedBox(height: 8),
+      if (onChangeNickname != null && player.nicknames && player.isPi)
+        _FooterLink(Copy.changeNickname, onChangeNickname!)
+      else
+        const SizedBox(height: 8),
       GameButton(Copy.playSolo, hint: Copy.playSoloHint, primary: true, onPressed: player.signedIn ? onSolo : null),
       GameButton(Copy.playVersus, hint: Copy.playVersusHint, onPressed: onVersus),
       GameButton(Copy.hallOfFame, onPressed: onHallOfFame),

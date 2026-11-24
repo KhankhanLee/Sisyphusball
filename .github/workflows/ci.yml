@@ -21,6 +21,9 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          # 3.50 deprecates package:flutter/material.dart, which every file
+          # imports and `flutter analyze` treats as fatal; move deliberately.
+          flutter-version: 3.47.x
           cache: true
 
       - name: Core — analyze & test

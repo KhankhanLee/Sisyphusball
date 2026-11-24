@@ -2,13 +2,15 @@
 library;
 
 class ServerSettings {
-  const ServerSettings({required this.sandbox, required this.allowGuests, required this.seed, this.carvePrice});
+  const ServerSettings(
+      {required this.sandbox, required this.allowGuests, required this.seed, this.carvePrice, this.nicknames = false});
 
   ServerSettings.fromJson(Map<String, dynamic> j)
       : sandbox = j['sandbox'] as bool? ?? true,
         allowGuests = j['allowGuest'] as bool? ?? false,
         seed = j['seed'] as int,
-        carvePrice = (j['carvePrice'] as num?)?.toDouble();
+        carvePrice = (j['carvePrice'] as num?)?.toDouble(),
+        nicknames = j['nicknames'] as bool? ?? false;
 
   final bool sandbox;
   final bool allowGuests;
@@ -17,17 +19,25 @@ class ServerSettings {
   /// What carving words into the mountain costs, in π; null when the server
   /// does not take payments.
   final double? carvePrice;
+
+  /// Pi players choose a nickname instead of showing their Pi username.
+  final bool nicknames;
 }
 
 class Player {
-  const Player({required this.username, this.guest = false});
+  const Player({required this.username, this.guest = false, this.needsNickname = false});
 
   Player.fromJson(Map<String, dynamic> j)
       : username = j['username'] as String,
-        guest = j['guest'] as bool? ?? false;
+        guest = j['guest'] as bool? ?? false,
+        needsNickname = j['needsNickname'] as bool? ?? false;
 
+  /// The name everyone sees: the nickname once chosen, else the Pi username.
   final String username;
   final bool guest;
+
+  /// The server asks this Pi player to choose a nickname first.
+  final bool needsNickname;
 }
 
 class Standing {
