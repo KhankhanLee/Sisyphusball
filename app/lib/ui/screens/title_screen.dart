@@ -16,12 +16,14 @@ class TitleScreen extends StatelessWidget {
     required this.onVersus,
     required this.onHallOfFame,
     required this.onOpenPage,
+    this.onShop,
     this.onChangeNickname,
   });
 
   final PlayerModel player;
   final LeaderboardModel leaderboard;
   final VoidCallback onSolo, onVersus, onHallOfFame;
+  final VoidCallback? onShop;
 
   /// Opens a server page such as `privacy` or `terms`.
   final void Function(String path) onOpenPage;
@@ -54,6 +56,7 @@ class TitleScreen extends StatelessWidget {
       GameButton(Copy.playSolo, hint: Copy.playSoloHint, primary: true, onPressed: player.signedIn ? onSolo : null),
       GameButton(Copy.playVersus, hint: Copy.playVersusHint, onPressed: onVersus),
       GameButton(Copy.hallOfFame, onPressed: onHallOfFame),
+      if (onShop != null) GameButton(Copy.shop, hint: Copy.shopHint, onPressed: player.signedIn ? onShop : null),
       const SizedBox(height: 18),
       const Text(Copy.howTo, textAlign: TextAlign.center, style: TextStyles.small),
       if (stats.totalRuns > 0) ...[

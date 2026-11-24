@@ -1,3 +1,5 @@
+import 'package:sisyphus_core/sisyphus_core.dart' show Look;
+
 enum GameMode { idle, solo, versus }
 
 /// Another player climbing right now, drawn as a translucent stone.
@@ -35,4 +37,7 @@ abstract interface class SceneOverlay {
   List<Marker> get markers;
 
   List<Engraving> get engravings;
+
+  /// What the solo player's Sisyphus wears.
+  Look get look;
 }

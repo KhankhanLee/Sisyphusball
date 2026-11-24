@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:sisyphus_core/sisyphus_core.dart';
 
 import 'game_controller.dart';
+import 'pusher_painter.dart';
 import 'scene.dart';
 
 /// Paints every lane side by side, repainting whenever the game ticks.
@@ -26,6 +27,7 @@ class GamePainter extends CustomPainter {
               ghosts: overlay.ghosts,
               markers: overlay.markers,
               engravings: overlay.engravings,
+              look: overlay.look,
               figure: const Color(0xFFEFE6D8));
       return;
     }
@@ -74,6 +76,7 @@ class _LanePainter {
     List<Ghost> ghosts = const [],
     List<Marker> markers = const [],
     List<Engraving> engravings = const [],
+    Look? look,
     required Color figure,
   }) {
     canvas
@@ -88,7 +91,7 @@ class _LanePainter {
     _markers(markers);
     _rocks();
     _ghosts(ghosts);
-    _figure(figure);
+    _figure(figure, look);
     _stone();
     _popups();
     canvas.restore();
@@ -204,24 +207,8 @@ class _LanePainter {
 
   /// Sisyphus, leaning into the stone from below. He stays where the stone
   /// slipped away from him.
-  void _figure(Color color) {
-    final x = centerX, top = toScreen(climber.figureY) + stoneRadius;
-    final s = scale * 0.5;
-    final p = Paint()
-      ..color = color
-      ..strokeWidth = max(2, s * 0.16)
-      ..strokeCap = StrokeCap.round;
-    final headY = top + s * 0.55;
-    final shoulder = Offset(x - s * 0.05, headY + s * 0.5);
-    final hip = Offset(x + s * 0.05, headY + s * 1.3);
-    canvas
-      ..drawCircle(Offset(x - s * 0.15, headY), s * 0.28, p)
-      ..drawLine(Offset(x - s * 0.1, headY + s * 0.3), hip, p) // torso
-      ..drawLine(shoulder, Offset(x - s * 0.35, top), p) // arms reach up
-      ..drawLine(shoulder, Offset(x + s * 0.35, top), p)
-      ..drawLine(hip, Offset(x - s * 0.35, headY + s * 2.1), p) // legs braced
-      ..drawLine(hip, Offset(x + s * 0.45, headY + s * 2.0), p);
-  }
+  void _figure(Color color, Look? look) =>
+      paintPusher(canvas, x: centerX, top: toScreen(climber.figureY) + stoneRadius, s: scale * 0.5, look: look, tint: color);
 
   void _stone() {
     final center = Offset(centerX, toScreen(climber.y));

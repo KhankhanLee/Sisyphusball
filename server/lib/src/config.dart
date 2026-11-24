@@ -15,6 +15,7 @@ class ServerConfig {
     this.carvingsFile,
     this.nicknames = false,
     this.nicknamesFile,
+    this.looksFile,
     this.legalDir = 'legal',
     this.leaderboardSize = 50,
     this.piApiBase = 'https://api.minepi.com',
@@ -45,6 +46,7 @@ class ServerConfig {
       carvingsFile: env['CARVINGS_FILE'] ?? _besideDataFile(env['DATA_FILE'] ?? 'data/scores.json', 'carvings.json'),
       nicknames: flag('NICKNAMES', false),
       nicknamesFile: env['NICKNAMES_FILE'] ?? _besideDataFile(env['DATA_FILE'] ?? 'data/scores.json', 'nicknames.json'),
+      looksFile: env['LOOKS_FILE'] ?? _besideDataFile(env['DATA_FILE'] ?? 'data/scores.json', 'looks.json'),
       legalDir: env['LEGAL_DIR'] ?? 'legal',
       piApiBase: env['PI_API_BASE'] ?? 'https://api.minepi.com',
       dataFile: env['DATA_FILE'] ?? 'data/scores.json',
@@ -86,6 +88,10 @@ class ServerConfig {
 
   /// Where nicknames are persisted; null keeps them in memory only.
   final String? nicknamesFile;
+
+  /// Where characters, skins owned and worn are persisted; null keeps them
+  /// in memory only.
+  final String? looksFile;
 
   /// Where privacy.html and terms.html live.
   final String legalDir;

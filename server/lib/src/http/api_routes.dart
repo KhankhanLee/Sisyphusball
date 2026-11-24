@@ -9,7 +9,9 @@ import '../auth/auth_service.dart';
 import '../auth/identity.dart';
 import '../carvings/carving_service.dart';
 import '../config.dart';
+import '../looks/look_service.dart';
 import '../nicknames/nickname_service.dart';
+import '../payments/payment_desk.dart';
 import '../events.dart';
 import '../live/observers.dart';
 import '../runs/run_registry.dart';
@@ -26,12 +28,14 @@ import 'middleware.dart';
 ///   POST /api/auth                 {accessToken} | {guest, name}
 ///   GET  /api/me                   (bearer)
 ///   POST /api/me/nickname          (bearer) {nickname}         (NICKNAMES)
+///   GET  /api/me/look              (bearer) → {look, owned}    characters & skins
+///   POST /api/me/look              (bearer) {character, skin} → {look, owned}
 ///   GET  /api/leaderboard
 ///   POST /api/runs                 (bearer) → {runId, seed}
 ///   POST /api/runs/{id}/progress   (bearer) {height}
 ///   POST /api/runs/{id}/finish     (bearer) {score}
 ///   GET  /api/carvings             words carved into the mountain
-///   POST /api/payments/approve     (bearer) {paymentId}        Carve the Mountain
+///   POST /api/payments/approve     (bearer) {paymentId}        carvings, skins
 ///   POST /api/payments/complete    (bearer) {paymentId, txid}
 ///   GET  /ws                       live feed: {"type":"board"|"live"|"carvings", ...}
 ///   POST /api/client-log           {event, detail, ua} from browsers, logged
@@ -45,6 +49,8 @@ class ApiRoutes {
     required this.scores,
     required this.runs,
     required this.carvings,
+    required this.looks,
+    required this.payDesk,
     required this.nicknames,
     ClientLog? clientLog,
   })  : legal = LegalPages(directory: config.legalDir, contactEmail: config.contactEmail),
@@ -56,6 +62,8 @@ class ApiRoutes {
   final ScoreService scores;
   final RunRegistry runs;
   final CarvingService carvings;
+  final LookService looks;
+  final PaymentDesk payDesk;
   final NicknameService nicknames;
   final LegalPages legal;
   final ClientLog clientLog;
@@ -66,6 +74,8 @@ class ApiRoutes {
     ..post('/api/auth', _signIn)
     ..get('/api/me', _me)
     ..post('/api/me/nickname', _setNickname)
+    ..get('/api/me/look', _look)
+    ..post('/api/me/look', _equip)
     ..get('/api/leaderboard', _leaderboard)
     ..post('/api/runs', _startRun)
     ..post('/api/runs/<id>/progress', _progress)
@@ -89,7 +99,8 @@ class ApiRoutes {
         'allowGuest': config.allowGuests,
         'seed': config.seed,
         if (config.debugShots) 'debugShots': true,
-        if (carvings.enabled) 'carvePrice': config.carvePrice,
+        if (payDesk.enabled) 'carvePrice': config.carvePrice,
+        if (payDesk.enabled) 'shop': true,
         if (nicknames.enabled) 'nicknames': true,
       });
 
@@ -106,6 +117,14 @@ class ApiRoutes {
     auth.rename(who.uid, name);
     scores.rename(who.uid, name);
     return jsonResponse(_userAndStanding(auth.requireSession(req.headers['authorization'])));
+  }
+
+  Response _look(Request req) => jsonResponse(looks.stateOf(auth.requireSession(req.headers['authorization']).uid));
+
+  Future<Response> _equip(Request req) async {
+    final who = auth.requireSession(req.headers['authorization']);
+    final body = await readJson(req);
+    return jsonResponse(await looks.equip(who, body['character'], body['skin']));
   }
 
   Map<String, dynamic> _userAndStanding(Identity who) => {
@@ -160,7 +179,7 @@ class ApiRoutes {
     final who = auth.requireSession(req.headers['authorization']);
     final id = (await readJson(req))['paymentId'];
     if (id is! String || id.isEmpty) throw HttpError(400, 'paymentId required');
-    await carvings.approve(who, id);
+    await payDesk.approve(who, id);
     return jsonResponse({'ok': true});
   }
 
@@ -169,8 +188,7 @@ class ApiRoutes {
     final body = await readJson(req);
     final id = body['paymentId'], txid = body['txid'];
     if (id is! String || id.isEmpty || txid is! String || txid.isEmpty) throw HttpError(400, 'paymentId and txid required');
-    final carving = await carvings.complete(who, id, txid);
-    return jsonResponse({'carving': carving?.toPublicJson()});
+    return jsonResponse(await payDesk.complete(who, id, txid));
   }
 
   Response _validationKey(Request _) {

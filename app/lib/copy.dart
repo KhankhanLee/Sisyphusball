@@ -43,6 +43,21 @@ abstract final class Copy {
   static const nicknameCancel = 'Cancel';
   static const changeNickname = 'Change name';
 
+  // shop
+  static const shop = 'Shop';
+  static const shopHint = 'Looks';
+  static const shopTitle = 'Who pushes the stone?';
+  static const shopSubtitle = 'Looks change nothing about the climb. The stone falls the same.';
+  static const shopClosed = 'Pi payments are not open here yet. Free looks can still be worn.';
+  static const free = 'Free';
+  static const wear = 'Wear';
+  static const wearing = 'Wearing';
+  static const bought = 'Yours now. It falls the same.';
+  static const buyCancelled = 'Nothing was bought. No Pi was spent.';
+  static const buyFailed = 'Could not buy. If Pi was spent, it will be finished at your next sign-in.';
+
+  static String buyFor(double price) => _pi(price);
+
   // in-game
   static String hudLine(String tier, int best) => '$tier · best ${best}m';
 

@@ -15,11 +15,15 @@ Future<void> main() async {
   final nicknames = NicknameStore(path: config.nicknamesFile);
   await nicknames.load();
 
+  final looks = LookStore(path: config.looksFile);
+  await looks.load();
+
   final app = SisyphusServer(
     config: config,
     repository: repository,
     carvingStore: carvings,
     nicknameStore: nicknames,
+    lookStore: looks,
   );
   final server = await io.serve(app.handler, InternetAddress.anyIPv4, config.port);
   allowEmbeddingInPiBrowser(server);
