@@ -51,32 +51,34 @@ void main() {
     test('keeps non-Latin text', () => expect(cleanCarvingText('정상은 없다'), '정상은 없다'));
   });
 
-  group('CarvingService', () {
+  group('CarvingService via PaymentDesk', () {
     late FakePi pi;
     late CarvingService service;
+    late PaymentDesk desk;
     const alice = Identity(uid: 'pi:alice', username: 'alice');
 
     setUp(() {
       pi = FakePi();
-      service = CarvingService(CarvingStore(), pi, price: 1, bestOf: (uid) => uid == 'pi:alice' ? 30 : 0);
+      service = CarvingService(CarvingStore(), price: 1, bestOf: (uid) => uid == 'pi:alice' ? 30 : 0);
+      desk = PaymentDesk(pi, [service]);
     });
 
     test('approves, completes and announces a valid carving', () async {
       final events = <ServerEvent>[];
       service.attach(CallbackObserver(events.add));
       pi.add('p1');
-      await service.approve(alice, 'p1');
+      await desk.approve(alice, 'p1');
       expect(pi.approved, ['p1']);
 
       pi.add('p1', txid: 'tx1');
-      final carving = await service.complete(alice, 'p1', 'tx1');
-      expect(carving!.text, 'Still pushing.');
-      expect(carving.height, 20);
+      final result = await desk.complete(alice, 'p1', 'tx1');
+      expect(result['carving'], containsPair('text', 'Still pushing.'));
+      expect(result['carving'], containsPair('height', 20));
       expect(pi.completed, ['p1']);
       expect(events.whereType<CarvingsChanged>().single.carvings.single.username, 'alice');
 
       // completing again (e.g. an incomplete payment found at sign-in) is a no-op
-      await service.complete(alice, 'p1', 'tx1');
+      await desk.complete(alice, 'p1', 'tx1');
       expect(pi.completed, ['p1']);
       expect(service.carvings, hasLength(1));
     });
@@ -91,23 +93,23 @@ void main() {
         ..add('link', meta: {'kind': 'carve', 'text': 'see spam.com', 'height': 5})
         ..add('kind', meta: {'kind': 'skin', 'text': 'x', 'height': 5});
       for (final id in ['other', 'cheap', 'high', 'link', 'kind']) {
-        expect(await statusOf(service.approve(alice, id)), greaterThanOrEqualTo(400), reason: id);
+        expect(await statusOf(desk.approve(alice, id)), greaterThanOrEqualTo(400), reason: id);
       }
       expect(pi.approved, isEmpty);
-      expect(await statusOf(service.approve(const Identity(uid: 'guest:1', username: 'g', guest: true), 'other')), 403);
+      expect(await statusOf(desk.approve(const Identity(uid: 'guest:1', username: 'g', guest: true), 'other')), 403);
     });
 
     test('will not complete without the matching transaction', () async {
       pi.add('p2');
-      expect(await statusOf(service.complete(alice, 'p2', 'tx-made-up')), 409);
+      expect(await statusOf(desk.complete(alice, 'p2', 'tx-made-up')), 409);
       pi.add('p2', txid: 'tx2');
-      expect(await statusOf(service.complete(alice, 'p2', 'tx-other')), 409);
+      expect(await statusOf(desk.complete(alice, 'p2', 'tx-other')), 409);
       expect(pi.completed, isEmpty);
       expect(service.carvings, isEmpty);
     });
 
     test('is off without an API key', () async {
-      final off = CarvingService(CarvingStore(), null, price: 1, bestOf: (_) => 99);
+      final off = PaymentDesk(null, [CarvingService(CarvingStore(), price: 1, bestOf: (_) => 99)]);
       expect(off.enabled, isFalse);
       expect(await statusOf(off.approve(alice, 'p')), 503);
     });

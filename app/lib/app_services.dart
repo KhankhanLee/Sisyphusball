@@ -10,12 +10,14 @@ import 'data/run_reporter.dart';
 import 'game/game_controller.dart';
 import 'models/carvings_model.dart';
 import 'models/leaderboard_model.dart';
+import 'models/look_model.dart';
 import 'models/player_model.dart';
 import 'models/presence_model.dart';
 import 'models/scene_overlay_model.dart';
 import 'models/screen_model.dart';
 import 'payments/carve_service.dart';
 import 'pi/pi_sdk.dart';
+import 'shop/shop_service.dart';
 
 /// Composition root: creates every service and model once and wires the
 /// observers to their subjects. This table is the whole event flow:
@@ -42,8 +44,15 @@ class AppServices {
     feed = LiveFeed();
     auth = AuthService(this.api, authStrategies ?? [const PiAuthStrategy(), GuestAuthStrategy(askGuestName)]);
     reporter = RunReporter(this.api, currentHeight: () => game.height);
-    overlay = SceneOverlayModel(player: player, leaderboard: leaderboard, presence: presence, carvings: carvings);
+    overlay = SceneOverlayModel(
+      player: player,
+      leaderboard: leaderboard,
+      presence: presence,
+      carvings: carvings,
+      looks: looks,
+    );
     carve = CarveService(this.api, pay ?? piPay);
+    shop = ShopService(this.api, pay ?? piPay, looks);
     ads = AdBreaks(showAd ?? piShowInterstitial, onResult: (r) => diagnostics?.report('ad', r));
 
     game
@@ -73,6 +82,7 @@ class AppServices {
 
   late final AdBreaks ads;
   late final CarveService carve;
+  late final ShopService shop;
 
   // observers (UI state)
   final screens = ScreenModel();
@@ -80,6 +90,7 @@ class AppServices {
   final leaderboard = LeaderboardModel();
   final presence = PresenceModel();
   final carvings = CarvingsModel();
+  final looks = LookModel();
   late final SceneOverlayModel overlay;
 
   /// Connects to the live feed, loads the server settings and signs in.
@@ -95,8 +106,12 @@ class AppServices {
     game.seed = settings.seed;
     carvings.setPrice(settings.carvePrice);
     player.enableNicknames(settings.nicknames);
+    looks.setShopOpen(settings.shop);
     await auth.signIn(settings);
-    if (player.signedIn) await carve.settle(takePendingPayment());
+    if (player.signedIn) {
+      await carve.settle(takePendingPayment());
+      await shop.load();
+    }
   }
 
   void dispose() {
@@ -107,7 +122,7 @@ class AppServices {
     game
       ..detachAll()
       ..dispose();
-    for (final model in [screens, player, leaderboard, presence, carvings]) {
+    for (final model in [screens, player, leaderboard, presence, carvings, looks]) {
       model.dispose();
     }
   }

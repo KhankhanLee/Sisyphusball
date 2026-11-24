@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sisyphus_core/sisyphus_core.dart' show Skin;
 import 'package:url_launcher/url_launcher.dart';
 
 import 'app_services.dart';
@@ -13,6 +14,7 @@ import 'ui/screens/carve_dialog.dart';
 import 'ui/screens/guest_name_dialog.dart';
 import 'ui/screens/hall_of_fame_screen.dart';
 import 'ui/screens/nickname_dialog.dart';
+import 'ui/screens/shop_screen.dart';
 import 'ui/screens/huds.dart';
 import 'ui/screens/solo_result_screen.dart';
 import 'ui/screens/title_screen.dart';
@@ -128,6 +130,28 @@ class _GameShellState extends State<GameShell> {
     ));
   }
 
+  Future<void> _wear(Skin skin) async {
+    try {
+      await s.shop.wear(skin);
+    } on ApiException catch (e) {
+      _toast(e.message);
+    }
+  }
+
+  Future<void> _buy(Skin skin) async {
+    final outcome = await s.shop.buy(skin);
+    diagnostics.report('buy-skin', '${skin.id} ${outcome.name}');
+    _toast(switch (outcome) {
+      PaymentOutcome.completed => Copy.bought,
+      PaymentOutcome.cancelled => Copy.buyCancelled,
+      PaymentOutcome.failed => Copy.buyFailed,
+    });
+  }
+
+  void _toast(String message) {
+    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  }
+
   void _home() {
     s.game.start(GameMode.idle);
     s.screens.showTitle();
@@ -139,7 +163,7 @@ class _GameShellState extends State<GameShell> {
       body: Stack(fit: StackFit.expand, children: [
         GameView(game: s.game, overlay: s.overlay),
         ListenableBuilder(
-          listenable: Listenable.merge([s.screens, s.player, s.leaderboard, s.presence, s.carvings]),
+          listenable: Listenable.merge([s.screens, s.player, s.leaderboard, s.presence, s.carvings, s.looks]),
           builder: (context, _) => _screen(),
         ),
       ]),
@@ -155,6 +179,7 @@ class _GameShellState extends State<GameShell> {
             onHallOfFame: s.screens.openHallOfFame,
             onOpenPage: _openPage,
             onChangeNickname: _editNickname,
+            onShop: s.screens.openShop,
           ),
         Screen.solo => SoloHud(game: s.game, player: s.player, presence: s.presence),
         Screen.versus => VersusHud(game: s.game),
@@ -176,6 +201,13 @@ class _GameShellState extends State<GameShell> {
             scores: s.screens.lastScores,
             onAgain: () => _play(GameMode.versus),
             onHome: _home,
+          ),
+        Screen.shop => ShopScreen(
+            looks: s.looks,
+            signedIn: s.player.signedIn,
+            onWear: _wear,
+            onBuy: _buy,
+            onBack: s.screens.showTitle,
           ),
         Screen.hallOfFame => HallOfFameScreen(
             leaderboard: s.leaderboard,

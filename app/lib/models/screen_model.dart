@@ -7,7 +7,7 @@ import '../data/models.dart';
 import '../events.dart';
 import '../game/scene.dart';
 
-enum Screen { title, solo, versus, soloResult, versusResult, hallOfFame }
+enum Screen { title, solo, versus, soloResult, versusResult, hallOfFame, shop }
 
 /// Which screen is showing. Navigation follows the game by itself:
 /// observes GameController (a run starts or ends) and RunReporter (the
@@ -62,6 +62,8 @@ class ScreenModel extends ChangeNotifier implements Observer<AppEvent> {
   }
 
   void closeHallOfFame() => _go(_beforeHallOfFame);
+
+  void openShop() => _go(Screen.shop);
 
   void _go(Screen next) {
     screen = next;

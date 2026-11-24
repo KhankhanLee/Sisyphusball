@@ -9,6 +9,7 @@ import 'package:sisyphusball/data/models.dart';
 import 'package:sisyphusball/events.dart';
 import 'package:sisyphusball/models/carvings_model.dart';
 import 'package:sisyphusball/models/leaderboard_model.dart';
+import 'package:sisyphusball/models/look_model.dart';
 import 'package:sisyphusball/models/player_model.dart';
 import 'package:sisyphusball/models/presence_model.dart';
 import 'package:sisyphusball/models/scene_overlay_model.dart';
@@ -67,6 +68,7 @@ void main() {
       leaderboard: LeaderboardModel(),
       presence: PresenceModel(),
       carvings: carvings,
+      looks: LookModel(),
     );
     final e = overlay.engravings.single;
     expect((e.height, e.text, e.author), (20.0, 'Still pushing.', 'alice'));

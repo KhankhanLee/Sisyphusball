@@ -149,6 +149,13 @@ sudo docker compose up -d
 Mainnet 앱 지갑이 승인되면 같은 방법으로 `PI_API_KEY=<Mainnet 앱 키>`를 넣으면 Mainnet에서도 켜집니다.
 새긴 글귀는 `data/carvings.json` (Testnet은 `data-testnet/carvings.json`)에 저장됩니다.
 
+### 캐릭터·스킨 상점
+
+타이틀의 **Shop**에서 캐릭터(Sisyphus / Sisyphe, 무료)와 스킨을 고릅니다. Exile은 무료, Marble·Ember는 1π씩.
+스킨 구매도 Carve와 같은 Pi 결제라 **API Key가 있는 쪽(지금은 Testnet)에서만** 살 수 있고, 무료 캐릭터·스킨은 어디서나 입을 수 있습니다.
+가진 스킨과 입은 옷은 `data/looks.json` (Testnet은 `data-testnet/looks.json`)에 저장됩니다.
+캐릭터·스킨·가격 목록은 `packages/sisyphus_core/lib/src/looks.dart` 한 곳에 있습니다.
+
 ### 닉네임
 
 `NICKNAMES=true`이면 Pi 유저는 처음 로그인할 때 닉네임을 정하고, 랭킹·실시간 접속자·글귀에는 Pi 아이디 대신 닉네임이 보입니다.
