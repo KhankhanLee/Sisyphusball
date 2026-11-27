@@ -12,7 +12,7 @@ class FakePi implements PiPayments {
   final payments = <String, Map<String, dynamic>>{};
   final completed = <String>[];
 
-  void add(String id, {String uid = 'alice', num amount = 1, String skin = 'her-ember', String? txid}) =>
+  void add(String id, {String uid = 'alice', num amount = 1, String skin = 'her-lilac', String? txid}) =>
       payments[id] = {
         'identifier': id,
         'user_uid': uid,
@@ -59,15 +59,15 @@ void main() {
   });
 
   test('a paid skin must be bought before it can be worn', () async {
-    expect(await statusOf(looks.equip(alice, 'her', 'her-ember')), 402);
+    expect(await statusOf(looks.equip(alice, 'her', 'her-lilac')), 402);
 
     pi.add('p1');
     await desk.approve(alice, 'p1');
     pi.add('p1', txid: 't1');
     final state = await desk.complete(alice, 'p1', 't1');
     expect(state, {
-      'look': {'character': 'her', 'skin': 'her-ember'},
-      'owned': ['her-ember'],
+      'look': {'character': 'her', 'skin': 'her-lilac'},
+      'owned': ['her-lilac'],
     });
     expect(pi.completed, ['p1']);
 
@@ -79,7 +79,7 @@ void main() {
 
     // and it can be taken off and put back on
     await looks.equip(alice, 'him', 'him-exile');
-    expect((await looks.equip(alice, 'her', 'her-ember'))['look'], {'character': 'her', 'skin': 'her-ember'});
+    expect((await looks.equip(alice, 'her', 'her-lilac'))['look'], {'character': 'her', 'skin': 'her-lilac'});
   });
 
   test('refuses wrong prices, free skins and unknown skins', () async {
@@ -102,9 +102,9 @@ void main() {
 
     final again = LookStore(path: path);
     await again.load();
-    expect(again.of('pi:alice').owned, {'her-ember'});
+    expect(again.of('pi:alice').owned, {'her-lilac'});
     expect(again.delivered('p'), isTrue);
-    expect(LookService(again).lookOf('pi:alice').skinId, 'her-ember');
+    expect(LookService(again).lookOf('pi:alice').skinId, 'her-lilac');
     await dir.delete(recursive: true);
   });
 
@@ -132,7 +132,7 @@ void main() {
       expect((await call('GET', '/api/me/look', token: token))['look'], {'character': 'him', 'skin': 'him-exile'});
       final set = await call('POST', '/api/me/look', body: {'character': 'her', 'skin': 'her-exile'}, token: token);
       expect(set['look'], {'character': 'her', 'skin': 'her-exile'});
-      expect((await call('POST', '/api/me/look', body: {'character': 'her', 'skin': 'her-marble'}, token: token))['status'],
+      expect((await call('POST', '/api/me/look', body: {'character': 'her', 'skin': 'her-starlight'}, token: token))['status'],
           402);
       expect((await call('GET', '/api/me/look'))['status'], 401);
     } finally {

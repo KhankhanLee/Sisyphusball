@@ -10,8 +10,8 @@ void main() {
   });
 
   test('Look.fromJson falls back to the standard look for anything unknown or mismatched', () {
-    expect(Look.fromJson({'character': 'her', 'skin': 'her-ember'}).skinId, 'her-ember');
-    expect(Look.fromJson({'character': 'him', 'skin': 'her-ember'}).skinId, Look.standard.skinId);
+    expect(Look.fromJson({'character': 'her', 'skin': 'her-lilac'}).skinId, 'her-lilac');
+    expect(Look.fromJson({'character': 'him', 'skin': 'her-lilac'}).skinId, Look.standard.skinId);
     expect(Look.fromJson({'character': 'x', 'skin': 'y'}).characterId, defaultCharacterId);
     expect(Look.fromJson(null).skinId, 'him-exile');
   });

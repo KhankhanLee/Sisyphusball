@@ -13,7 +13,7 @@ import 'package:sisyphusball/ui/screens/shop_screen.dart';
 import 'package:sisyphusball/ui/widgets/portrait.dart';
 
 void main() {
-  final ember = skinById('her-ember')!;
+  final ember = skinById('her-lilac')!;
 
   test('buying a skin pays its price, lets the server deliver it, and wears it', () async {
     final calls = <String>[];
@@ -23,8 +23,8 @@ void main() {
         if (req.url.path == '/api/payments/complete') {
           return http.Response(
               jsonEncode({
-                'look': {'character': 'her', 'skin': 'her-ember'},
-                'owned': ['her-ember'],
+                'look': {'character': 'her', 'skin': 'her-lilac'},
+                'owned': ['her-lilac'],
               }),
               200);
         }
@@ -35,7 +35,7 @@ void main() {
     final model = LookModel();
     final shop = ShopService(api, (request, {required approve, required complete}) async {
       asked = request;
-      expect(model.buying, 'her-ember', reason: 'shown as in progress while paying');
+      expect(model.buying, 'her-lilac', reason: 'shown as in progress while paying');
       await approve('p1');
       await complete('p1', 't1');
       return PaymentOutcome.completed;
@@ -43,9 +43,9 @@ void main() {
 
     expect(await shop.buy(ember), PaymentOutcome.completed);
     expect(asked!.amount, 1);
-    expect(asked!.metadata, {'kind': 'skin', 'skin': 'her-ember'});
+    expect(asked!.metadata, {'kind': 'skin', 'skin': 'her-lilac'});
     expect(calls, ['POST /api/payments/approve', 'POST /api/payments/complete']);
-    expect(model.look.skinId, 'her-ember');
+    expect(model.look.skinId, 'her-lilac');
     expect(model.owns(ember), isTrue);
     expect(model.buying, isNull);
   });
@@ -100,16 +100,16 @@ void main() {
     final looks = LookModel()
       ..apply({
         'look': {'character': 'him', 'skin': 'him-exile'},
-        'owned': ['her-ember'],
+        'owned': ['her-lilac'],
       });
     final worn = <String>[];
     await tester.pumpWidget(screen(looks, onWear: (s) => worn.add(s.id)));
     await tester.tap(find.text('Sisyphe'));
     await tester.pump();
-    expect(find.text('Still warm from Tartarus.'), findsOneWidget);
+    expect(find.text('A short reprieve. It never lasts.'), findsOneWidget);
     await tester.ensureVisible(find.widgetWithText(OutlinedButton, 'Wear').last);
     await tester.tap(find.widgetWithText(OutlinedButton, 'Wear').last);
-    expect(worn, ['her-ember']);
+    expect(worn, ['her-lilac']);
   });
 
   testWidgets('Sisyphe has a portrait that follows the tapped skin', (tester) async {
@@ -122,8 +122,8 @@ void main() {
     await tester.tap(find.text('Sisyphe'));
     await tester.pump();
     expect(tester.widget<Portrait>(find.byType(Portrait)).skinId, 'her-exile');
-    await tester.tap(find.text('Still warm from Tartarus.'));
+    await tester.tap(find.text('A short reprieve. It never lasts.'));
     await tester.pump();
-    expect(tester.widget<Portrait>(find.byType(Portrait)).skinId, 'her-ember');
+    expect(tester.widget<Portrait>(find.byType(Portrait)).skinId, 'her-lilac');
   });
 }

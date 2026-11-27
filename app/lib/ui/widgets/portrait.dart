@@ -4,13 +4,13 @@ import '../theme.dart';
 
 /// Skins that have a drawn portrait (`assets/portraits/{skin id}.jpg`). Art
 /// can be replaced by dropping in a new file with the same name.
-const _portraits = {'her-exile', 'her-marble', 'her-ember'};
+const _portraits = {'her-exile', 'her-starlight', 'her-lilac', 'her-herald', 'her-envoy'};
 
 bool hasPortrait(String skinId) => _portraits.contains(skinId);
 
-/// The large picture of a character in a skin, shown in the shop.
+/// The large full-body picture (2:3) of a character in a skin, shown in the shop.
 class Portrait extends StatelessWidget {
-  const Portrait(this.skinId, {super.key, this.height = 280});
+  const Portrait(this.skinId, {super.key, this.height = 330});
 
   final String skinId;
   final double height;
@@ -18,7 +18,7 @@ class Portrait extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
         height: height,
-        width: height * 0.75,
+        width: height * 2 / 3,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: Palette.hairline),
@@ -31,8 +31,9 @@ class Portrait extends StatelessWidget {
             'assets/portraits/$skinId.jpg',
             key: ValueKey(skinId),
             fit: BoxFit.cover,
+            alignment: Alignment.topCenter,
             height: height,
-            width: height * 0.75,
+            width: height * 2 / 3,
           ),
         ),
       );
