@@ -6,6 +6,7 @@ import '../../models/look_model.dart';
 import '../theme.dart';
 import '../widgets/game_button.dart';
 import '../widgets/panel.dart';
+import '../widgets/portrait.dart';
 import '../widgets/pusher_preview.dart';
 
 /// Choose who pushes the stone, and in what. Looks never change the score.
@@ -31,6 +32,16 @@ class ShopScreen extends StatefulWidget {
 class _ShopScreenState extends State<ShopScreen> {
   late String _character = widget.looks.look.characterId;
 
+  /// The skin shown in the portrait: tapped last, else worn, else free.
+  String? _preview;
+
+  String get _previewSkin {
+    final tapped = _preview;
+    if (tapped != null && skinById(tapped)?.characterId == _character) return tapped;
+    final worn = widget.looks.look;
+    return worn.characterId == _character ? worn.skinId : defaultSkinOf(_character).id;
+  }
+
   @override
   Widget build(BuildContext context) {
     final looks = widget.looks;
@@ -39,6 +50,12 @@ class _ShopScreenState extends State<ShopScreen> {
       const SizedBox(height: 4),
       const Text(Copy.shopSubtitle, textAlign: TextAlign.center, style: TextStyles.small),
       const SizedBox(height: 14),
+      if (hasPortrait(_previewSkin)) ...[
+        Portrait(_previewSkin),
+        const SizedBox(height: 6),
+        Text(skinById(_previewSkin)!.name, style: const TextStyle(color: Palette.muted, fontSize: 12)),
+        const SizedBox(height: 10),
+      ],
       Row(children: [
         for (final c in characters)
           Expanded(
@@ -46,7 +63,10 @@ class _ShopScreenState extends State<ShopScreen> {
               character: c,
               look: looks.look.characterId == c.id ? looks.look : Look(c.id, defaultSkinOf(c.id).id),
               selected: _character == c.id,
-              onTap: () => setState(() => _character = c.id),
+              onTap: () => setState(() {
+                _character = c.id;
+                _preview = null;
+              }),
             ),
           ),
       ]),
@@ -58,6 +78,7 @@ class _ShopScreenState extends State<ShopScreen> {
           signedIn: widget.signedIn,
           onWear: () => widget.onWear(skin),
           onBuy: () => widget.onBuy(skin),
+          onPreview: () => setState(() => _preview = skin.id),
         ),
       if (!looks.shopOpen) ...[
         const SizedBox(height: 8),
@@ -107,12 +128,13 @@ class _SkinRow extends StatelessWidget {
     required this.signedIn,
     required this.onWear,
     required this.onBuy,
+    required this.onPreview,
   });
 
   final Skin skin;
   final LookModel looks;
   final bool signedIn;
-  final VoidCallback onWear, onBuy;
+  final VoidCallback onWear, onBuy, onPreview;
 
   @override
   Widget build(BuildContext context) {
@@ -132,25 +154,29 @@ class _SkinRow extends StatelessWidget {
         child: Text(Copy.buyFor(skin.price)),
       );
     }
-    return Container(
-      margin: const EdgeInsets.only(top: 8),
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: const Color(0x0AFFFFFF),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: wearing ? Palette.accent : Palette.hairline),
-      ),
-      child: Row(children: [
-        PusherPreview(Look(skin.characterId, skin.id), size: const Size(52, 66)),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(skin.name, style: const TextStyle(fontWeight: FontWeight.w800, color: Palette.ink)),
-            Text(skin.blurb, style: TextStyles.small),
-          ]),
+    return InkWell(
+      onTap: onPreview,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        margin: const EdgeInsets.only(top: 8),
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: const Color(0x0AFFFFFF),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: wearing ? Palette.accent : Palette.hairline),
         ),
-        action,
-      ]),
+        child: Row(children: [
+          PusherPreview(Look(skin.characterId, skin.id), size: const Size(52, 66)),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(skin.name, style: const TextStyle(fontWeight: FontWeight.w800, color: Palette.ink)),
+              Text(skin.blurb, style: TextStyles.small),
+            ]),
+          ),
+          action,
+        ]),
+      ),
     );
   }
 }

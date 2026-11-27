@@ -56,11 +56,11 @@ const skins = [
   Skin('him-ember', 'him', 'Ember', 'Still warm from Tartarus.', 1,
       SkinColors(skin: 0xFFC98E6B, hair: 0xFF8E2A12, cloth: 0xFF2A1A1F, trim: 0xFFFF8A3D, glow: 0x55FF7A2E)),
   Skin('her-exile', 'her', 'Exile', 'The robe she was condemned in.', 0,
-      SkinColors(skin: 0xFFEFCFB0, hair: 0xFF2E2019, cloth: 0xFFCFC1DA, trim: 0xFF8A6FA8)),
+      SkinColors(skin: 0xFFF6DCC8, hair: 0xFFE4E6EF, cloth: 0xFFEDE6F6, trim: 0xFFA58AD0)),
   Skin('her-marble', 'her', 'Marble', 'Carved like the gods who sent her.', 1,
-      SkinColors(skin: 0xFFF3ECE2, hair: 0xFFD8D0C4, cloth: 0xFFF8F5F0, trim: 0xFFD4AF37)),
+      SkinColors(skin: 0xFFF6E6D6, hair: 0xFFEEF0F4, cloth: 0xFFF8F5F0, trim: 0xFFD4AF37)),
   Skin('her-ember', 'her', 'Ember', 'Still warm from Tartarus.', 1,
-      SkinColors(skin: 0xFFCF9877, hair: 0xFFB3341A, cloth: 0xFF241820, trim: 0xFFFF8A3D, glow: 0x55FF7A2E)),
+      SkinColors(skin: 0xFFF1D5C1, hair: 0xFFDCDDE6, cloth: 0xFF241820, trim: 0xFFFF8A3D, glow: 0x55FF7A2E)),
 ];
 
 const defaultCharacterId = 'him';

@@ -10,6 +10,7 @@ import 'package:sisyphusball/models/look_model.dart';
 import 'package:sisyphusball/payments/payment.dart';
 import 'package:sisyphusball/shop/shop_service.dart';
 import 'package:sisyphusball/ui/screens/shop_screen.dart';
+import 'package:sisyphusball/ui/widgets/portrait.dart';
 
 void main() {
   final ember = skinById('her-ember')!;
@@ -109,5 +110,20 @@ void main() {
     await tester.ensureVisible(find.widgetWithText(OutlinedButton, 'Wear').last);
     await tester.tap(find.widgetWithText(OutlinedButton, 'Wear').last);
     expect(worn, ['her-ember']);
+  });
+
+  testWidgets('Sisyphe has a portrait that follows the tapped skin', (tester) async {
+    tester.view
+      ..physicalSize = const Size(900, 2000)
+      ..devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(screen(LookModel()));
+    expect(find.byType(Portrait), findsNothing, reason: 'Sisyphus has no portrait yet');
+    await tester.tap(find.text('Sisyphe'));
+    await tester.pump();
+    expect(tester.widget<Portrait>(find.byType(Portrait)).skinId, 'her-exile');
+    await tester.tap(find.text('Still warm from Tartarus.'));
+    await tester.pump();
+    expect(tester.widget<Portrait>(find.byType(Portrait)).skinId, 'her-ember');
   });
 }
