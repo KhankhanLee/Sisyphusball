@@ -61,6 +61,10 @@ const skins = [
       SkinColors(skin: 0xFFF6DCC8, hair: 0xFFEEF0F6, cloth: 0xFFF7F4FB, trim: 0xFF8E6CD6, glow: 0x33C9B8FF)),
   Skin('her-lilac', 'her', 'Lilac', 'A short reprieve. It never lasts.', 1,
       SkinColors(skin: 0xFFF6DCC8, hair: 0xFFE8E9F2, cloth: 0xFFECE6F8, trim: 0xFFB28CE8)),
+  Skin('her-herald', 'her', 'Herald', 'Sent by the gods to watch the stone fall.', 1,
+      SkinColors(skin: 0xFFF6DCC8, hair: 0xFFEEF0F6, cloth: 0xFFF5F4F8, trim: 0xFF2E3270)),
+  Skin('her-envoy', 'her', 'Envoy', 'She carries the verdict. It has not changed.', 1,
+      SkinColors(skin: 0xFFF6DCC8, hair: 0xFFEEF0F6, cloth: 0xFFF4F2EE, trim: 0xFFC9A55A)),
 ];
 
 const defaultCharacterId = 'him';

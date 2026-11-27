@@ -4,7 +4,7 @@ import '../theme.dart';
 
 /// Skins that have a drawn portrait (`assets/portraits/{skin id}.jpg`). Art
 /// can be replaced by dropping in a new file with the same name.
-const _portraits = {'her-exile', 'her-starlight', 'her-lilac'};
+const _portraits = {'her-exile', 'her-starlight', 'her-lilac', 'her-herald', 'her-envoy'};
 
 bool hasPortrait(String skinId) => _portraits.contains(skinId);
 
