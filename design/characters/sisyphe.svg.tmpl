@@ -1,0 +1,142 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" width="600" height="800">
+  <defs>
+    <radialGradient id="sky" cx="0.5" cy="0.35" r="0.85">
+      <stop offset="0" stop-color="#4a3b62"/><stop offset="0.55" stop-color="#2a2140"/><stop offset="1" stop-color="#120f1b"/>
+    </radialGradient>
+    <radialGradient id="stone" cx="0.35" cy="0.3" r="0.8">
+      <stop offset="0" stop-color="#efe3cc"/><stop offset="0.6" stop-color="#b3a287"/><stop offset="1" stop-color="#6f624f"/>
+    </radialGradient>
+    <linearGradient id="hair" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="{HAIR_LIGHT}"/><stop offset="0.45" stop-color="{HAIR}"/><stop offset="1" stop-color="{HAIR_SHADE}"/>
+    </linearGradient>
+    <linearGradient id="hairFront" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="{HAIR_LIGHT}"/><stop offset="1" stop-color="{HAIR}"/>
+    </linearGradient>
+    <linearGradient id="skin" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff1e6"/><stop offset="1" stop-color="#f6d9c6"/>
+    </linearGradient>
+    <linearGradient id="cloth" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="{CLOTH_LIGHT}"/><stop offset="1" stop-color="{CLOTH_SHADE}"/>
+    </linearGradient>
+    <linearGradient id="iris" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1b1430"/><stop offset="0.45" stop-color="{EYE}"/><stop offset="1" stop-color="{EYE_LIGHT}"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="{GLOW}" stop-opacity="0.55"/><stop offset="1" stop-color="{GLOW}" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="soft"><feGaussianBlur stdDeviation="1.2"/></filter>
+  </defs>
+
+  <!-- dusk sky, the mountain, the stone -->
+  <rect width="600" height="800" fill="url(#sky)"/>
+  <path d="M0 640 L210 470 L330 560 L600 360 L600 800 L0 800 Z" fill="#1d1729" opacity="0.9"/>
+  <g opacity="0.55" fill="#f3e6c9">
+    <circle cx="70" cy="90" r="1.6"/><circle cx="140" cy="40" r="1.1"/><circle cx="520" cy="300" r="1.3"/>
+    <circle cx="95" cy="260" r="1"/><circle cx="560" cy="520" r="1.4"/><circle cx="40" cy="420" r="1.2"/>
+  </g>
+  <circle cx="470" cy="150" r="140" fill="url(#stone)"/>
+  <g fill="none" stroke="#8b7a62" stroke-width="7" opacity="0.6">
+    <circle cx="420" cy="110" r="22"/><circle cx="505" cy="190" r="16"/><circle cx="455" cy="215" r="10"/>
+  </g>
+  <circle cx="300" cy="430" r="300" fill="url(#glow)"/>
+
+  <!-- hair, back: long, falling past the shoulders -->
+  <path d="M300 122 C176 122 150 230 160 340 C170 460 116 610 92 800 L508 800 C484 610 430 460 440 340 C450 230 424 122 300 122 Z"
+        fill="url(#hair)" stroke="{HAIR_LINE}" stroke-width="2"/>
+  <g fill="none" stroke="{HAIR_LINE}" stroke-width="1.5" opacity="0.45">
+    <path d="M182 330 C176 470 146 620 122 790"/><path d="M204 380 C196 520 178 650 160 795"/>
+    <path d="M418 330 C424 470 454 620 478 790"/><path d="M396 380 C404 520 422 650 440 795"/>
+  </g>
+
+  <path d="M210 250 C200 360 232 446 300 446 C368 446 400 360 390 250 C380 200 220 200 210 250 Z" fill="{HAIR_SHADE}" opacity="0.75"/>
+
+  <!-- neck and shoulders -->
+  <path d="M276 360 L276 448 L324 448 L324 360 Z" fill="url(#skin)"/>
+  <path d="M276 402 Q300 424 324 402 L324 424 Q300 446 276 424 Z" fill="#e7bfa8" opacity="0.85"/>
+  <path d="M276 438 C252 450 214 454 190 468 C164 484 152 530 150 610 L450 610 C448 530 436 484 410 468 C386 454 348 450 324 438 Z"
+        fill="url(#skin)" stroke="#d9a98f" stroke-width="1.6"/>
+  <path d="M258 462 Q280 470 288 482" fill="none" stroke="#d9a98f" stroke-width="1.4" opacity="0.8"/>
+  <path d="M342 462 Q320 470 312 482" fill="none" stroke="#d9a98f" stroke-width="1.4" opacity="0.8"/>
+
+  <!-- hair falling in front of the shoulders -->
+  <path d="M176 330 C168 430 150 520 132 600 C150 610 170 600 182 560 C196 500 204 420 206 340 Z"
+        fill="url(#hair)" stroke="{HAIR_LINE}" stroke-width="1.8"/>
+  <path d="M424 330 C432 430 450 520 468 600 C450 610 430 600 418 560 C404 500 396 420 394 340 Z"
+        fill="url(#hair)" stroke="{HAIR_LINE}" stroke-width="1.8"/>
+
+  <!-- chiton: pinned on her left shoulder, draped across, cinched at the waist -->
+  <path d="M182 478 C212 500 250 540 300 556 C350 566 396 556 428 530 C440 560 444 600 430 640
+           C416 660 410 700 440 800 L160 800 C190 700 184 660 170 640 C156 600 158 520 182 478 Z"
+        fill="url(#cloth)" stroke="{CLOTH_LINE}" stroke-width="2"/>
+  <path d="M182 478 C176 470 186 456 200 460 C232 470 262 520 300 556 C254 548 214 516 182 478 Z"
+        fill="{CLOTH_SHADE}" opacity="0.6"/>
+  <path d="M182 478 C212 500 250 540 300 556 C350 566 396 556 428 530" fill="none" stroke="{TRIM}" stroke-width="5" stroke-linecap="round"/>
+  <path d="M182 478 C212 500 250 540 300 556 C350 566 396 556 428 530" fill="none" stroke="#fff6d8" stroke-width="1.6" opacity="0.5"/>
+  <circle cx="188" cy="474" r="9" fill="{TRIM}" stroke="{CLOTH_LINE}" stroke-width="1.5"/>
+  <circle cx="186" cy="472" r="3" fill="#ffffff" opacity="0.6"/>
+  <g fill="none" stroke="{CLOTH_LINE}" stroke-width="1.5" opacity="0.45">
+    <path d="M214 560 C232 600 228 620 214 640"/><path d="M300 580 C306 606 304 626 296 642"/><path d="M380 576 C372 604 378 626 390 640"/>
+    <path d="M200 660 C188 710 186 760 180 800"/><path d="M250 662 C246 720 244 760 242 800"/>
+    <path d="M300 664 C302 720 300 760 300 800"/><path d="M350 662 C354 720 356 760 358 800"/><path d="M400 660 C412 710 414 760 420 800"/>
+  </g>
+  <path d="M168 640 C240 660 360 660 432 640" fill="none" stroke="{TRIM}" stroke-width="7" stroke-linecap="round"/>
+  <path d="M292 652 C284 700 290 740 280 790 M308 652 C318 700 312 740 322 790" fill="none" stroke="{TRIM}" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="300" cy="652" r="6" fill="{TRIM}"/>
+
+  <!-- the stone pendant -->
+  <path d="M282 446 Q300 488 318 446" fill="none" stroke="{TRIM}" stroke-width="2"/>
+  <circle cx="300" cy="486" r="12" fill="url(#stone)" stroke="{TRIM}" stroke-width="2.5"/>
+
+  <!-- face -->
+  <path d="M226 250 C222 318 252 366 300 386 C348 366 378 318 374 250 C370 196 230 196 226 250 Z"
+        fill="url(#skin)" stroke="#d6a48b" stroke-width="2"/>
+  <path d="M228 262 C258 286 342 286 372 262 L372 250 C340 270 260 270 228 250 Z" fill="#e8bda5" opacity="0.6"/>
+  <ellipse cx="248" cy="344" rx="19" ry="8" fill="#ff8fa3" opacity="0.38" filter="url(#soft)"/>
+  <ellipse cx="352" cy="344" rx="19" ry="8" fill="#ff8fa3" opacity="0.38" filter="url(#soft)"/>
+  <path d="M299 334 L302 340" stroke="#b07c69" stroke-width="2" stroke-linecap="round"/>
+  <path d="M291 360 Q300 365 309 360" fill="none" stroke="#a5655a" stroke-width="2.2" stroke-linecap="round"/>
+
+  <!-- eyes: large, almond, lashes swept out -->
+  <g id="eye">
+    <path d="M236 316 Q258 290 290 300 Q292 330 266 338 Q242 336 236 316 Z" fill="#fffaf6"/>
+    <ellipse cx="266" cy="318" rx="16" ry="21" fill="url(#iris)"/>
+    <ellipse cx="267" cy="321" rx="7.5" ry="11" fill="#120c22"/>
+    <path d="M254 330 Q266 340 278 330" fill="none" stroke="{EYE_LIGHT}" stroke-width="2" opacity="0.8"/>
+    <circle cx="259" cy="308" r="6" fill="#ffffff"/><circle cx="274" cy="328" r="2.8" fill="#ffffff" opacity="0.9"/>
+    <path d="M230 316 Q252 286 294 298" fill="none" stroke="#24192b" stroke-width="5.5" stroke-linecap="round"/>
+    <path d="M232 314 L222 308 M236 307 L229 299" stroke="#24192b" stroke-width="2.4" stroke-linecap="round"/>
+    <path d="M246 337 Q266 343 286 333" fill="none" stroke="#a57868" stroke-width="1.5"/>
+    <path d="M242 278 Q262 270 284 276" fill="none" stroke="{HAIR_LINE}" stroke-width="2.4" stroke-linecap="round"/>
+  </g>
+  <use href="#eye" transform="translate(600 0) scale(-1 1)"/>
+
+  <!-- hair, front: side locks and bangs -->
+  <path d="M232 260 C224 320 226 380 236 430" fill="none" stroke="{HAIR_SHADE}" stroke-width="10" opacity="0.35" stroke-linecap="round"/>
+  <path d="M368 260 C376 320 374 380 364 430" fill="none" stroke="{HAIR_SHADE}" stroke-width="10" opacity="0.35" stroke-linecap="round"/>
+  <path d="M224 232 C204 300 200 380 210 452 C216 478 230 478 232 452 C228 380 236 316 248 266 Z"
+        fill="url(#hairFront)" stroke="{HAIR_LINE}" stroke-width="2"/>
+  <path d="M376 232 C396 300 400 380 390 452 C384 478 370 478 368 452 C372 380 364 316 352 266 Z"
+        fill="url(#hairFront)" stroke="{HAIR_LINE}" stroke-width="2"/>
+  <path d="M204 296 C192 192 250 140 300 140 C350 140 408 192 396 296
+           Q386 266 372 250 Q374 278 362 298 Q354 264 338 244 Q334 272 320 294
+           Q314 258 300 238 Q290 266 280 290 Q270 258 260 246 Q252 272 240 290
+           Q236 264 226 252 Q216 274 204 296 Z"
+        fill="url(#hairFront)" stroke="{HAIR_LINE}" stroke-width="2" stroke-linejoin="round"/>
+  <g fill="none" stroke="{HAIR_LINE}" stroke-width="1.3" opacity="0.5">
+    <path d="M300 156 Q290 200 300 238"/><path d="M264 166 Q250 204 260 246"/><path d="M336 166 Q350 204 338 244"/>
+    <path d="M232 190 Q222 230 226 252"/><path d="M368 190 Q378 230 372 250"/>
+  </g>
+  <path d="M236 192 Q300 164 364 192" fill="none" stroke="#ffffff" stroke-width="7" opacity="0.45" stroke-linecap="round"/>
+  <path d="M300 142 C306 104 340 96 332 118 C326 110 310 120 304 142 Z" fill="url(#hairFront)" stroke="{HAIR_LINE}" stroke-width="2"/>
+
+  <!-- laurel hairpin -->
+  <g fill="{TRIM}" stroke="{CLOTH_LINE}" stroke-width="0.8">
+    <path d="M200 280 Q214 230 254 200" fill="none" stroke="{TRIM}" stroke-width="2"/>
+    <ellipse cx="206" cy="262" rx="5" ry="11" transform="rotate(-55 206 262)"/>
+    <ellipse cx="214" cy="244" rx="5" ry="11" transform="rotate(-35 214 244)"/>
+    <ellipse cx="226" cy="228" rx="5" ry="11" transform="rotate(-15 226 228)"/>
+    <ellipse cx="240" cy="214" rx="5" ry="11" transform="rotate(10 240 214)"/>
+    <ellipse cx="254" cy="204" rx="5" ry="10" transform="rotate(35 254 204)"/>
+  </g>
+  <rect x="0" y="0" width="600" height="800" fill="none" stroke="{GLOW}" stroke-opacity="0.25" stroke-width="10"/>
+</svg>
