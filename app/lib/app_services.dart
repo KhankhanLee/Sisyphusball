@@ -8,6 +8,7 @@ import 'data/live_feed.dart';
 import 'data/models.dart';
 import 'data/run_reporter.dart';
 import 'game/game_controller.dart';
+import 'game/sprites.dart';
 import 'models/carvings_model.dart';
 import 'models/leaderboard_model.dart';
 import 'models/look_model.dart';
@@ -50,6 +51,7 @@ class AppServices {
       presence: presence,
       carvings: carvings,
       looks: looks,
+      sprites: sprites,
     );
     carve = CarveService(this.api, pay ?? piPay);
     shop = ShopService(this.api, pay ?? piPay, looks);
@@ -91,11 +93,13 @@ class AppServices {
   final presence = PresenceModel();
   final carvings = CarvingsModel();
   final looks = LookModel();
+  final sprites = Sprites();
   late final SceneOverlayModel overlay;
 
   /// Connects to the live feed, loads the server settings and signs in.
   Future<void> start() async {
     feed.connect();
+    sprites.load().ignore();
     final ServerSettings settings;
     try {
       settings = ServerSettings.fromJson(await api.get('/api/config'));
@@ -122,7 +126,7 @@ class AppServices {
     game
       ..detachAll()
       ..dispose();
-    for (final model in [screens, player, leaderboard, presence, carvings, looks]) {
+    for (final model in [screens, player, leaderboard, presence, carvings, looks, sprites]) {
       model.dispose();
     }
   }

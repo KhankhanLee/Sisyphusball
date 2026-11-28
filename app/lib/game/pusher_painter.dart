@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'dart:ui';
+import 'dart:ui' as ui show Image;
 
 import 'package:sisyphus_core/sisyphus_core.dart';
 
@@ -8,8 +9,14 @@ import 'package:sisyphus_core/sisyphus_core.dart';
 /// [x] is the stone's centre line, [top] the bottom of the stone (where the
 /// hands are) and [s] the figure's size unit in pixels. With a [look] the
 /// figure is drawn in that character and skin; without one, as a plain
-/// figure in [tint] (the 2P lanes).
-void paintPusher(Canvas canvas, {required double x, required double top, required double s, Look? look, Color? tint}) {
+/// figure in [tint] (the 2P lanes). With a [sprite] (that look's picture),
+/// the picture stands under the stone, holding it up.
+void paintPusher(Canvas canvas,
+    {required double x, required double top, required double s, Look? look, Color? tint, ui.Image? sprite}) {
+  if (look != null && sprite != null) {
+    _paintSprite(canvas, x: x, top: top, s: s, look: look, sprite: sprite);
+    return;
+  }
   final headY = top + s * 0.55;
   final head = Offset(x - s * 0.15, headY);
   final shoulder = Offset(x - s * 0.05, headY + s * 0.5);
@@ -106,4 +113,26 @@ void paintPusher(Canvas canvas, {required double x, required double top, require
   if (her) {
     canvas.drawCircle(head.translate(-s * 0.08, -s * 0.34), s * 0.12, Paint()..color = Color(c.hair)); // bun
   }
+}
+
+void _paintSprite(Canvas canvas,
+    {required double x, required double top, required double s, required Look look, required ui.Image sprite}) {
+  final height = s * 4.0;
+  final width = height * sprite.width / sprite.height;
+  final dst = Rect.fromLTWH(x - width / 2, top - height * 0.02, width, height);
+  final glow = look.skin.colors.glow;
+  if (glow != null) {
+    canvas.drawOval(
+      dst.inflate(width * 0.3),
+      Paint()
+        ..color = Color(glow)
+        ..maskFilter = MaskFilter.blur(BlurStyle.normal, s * 0.6),
+    );
+  }
+  canvas.drawImageRect(
+    sprite,
+    Rect.fromLTWH(0, 0, sprite.width.toDouble(), sprite.height.toDouble()),
+    dst,
+    Paint()..filterQuality = FilterQuality.medium,
+  );
 }

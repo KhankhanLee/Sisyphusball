@@ -1,3 +1,5 @@
+import 'dart:ui' as ui show Image;
+
 import 'package:sisyphus_core/sisyphus_core.dart' show Look;
 
 enum GameMode { idle, solo, versus }
@@ -40,4 +42,7 @@ abstract interface class SceneOverlay {
 
   /// What the solo player's Sisyphus wears.
   Look get look;
+
+  /// The picture drawn for [look], if it has one.
+  ui.Image? get sprite;
 }
