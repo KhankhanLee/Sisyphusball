@@ -7,6 +7,8 @@ Pi Network에 올리는 Flutter 게임입니다. 게임 안의 모든 문구는 
 손을 떼면 경사를 따라 굴러 내려옵니다. 산길을 가로지르는 바위에 닿으면 돌은 **바닥까지 굴러 떨어지고** 그 판은 끝납니다.
 
 군대에 있는 동안 바로 앞에 닥친 일들을 해 나가면서 인생에 대해 생각하면서 시지프 신화를 읽었고 그에 영감을 받아 만든 게임입니다.
+<img width="1080" height="2109" alt="Screenshot_20261128_011554_Pi Browser" src="https://github.com/user-attachments/assets/9a016ae9-380a-4a8a-beaa-2d572b5941b9" />
+<img width="1080" height="2158" alt="Screenshot_20261128_210355_Pi Browser" src="https://github.com/user-attachments/assets/d958de39-d917-4125-9990-edc6e8da8822" />
 
 - 점수는 **1m = 1점**이고, 선형적으로 1점씩만 오릅니다 (콤보, 배율, 보너스 없음).
 - 모든 플레이어가 **같은 시드로 만들어진 같은 산**을 오르므로 랭킹이 같은 조건에서 비교됩니다.
@@ -29,6 +31,12 @@ Pi Network에 올리는 Flutter 게임입니다. 게임 안의 모든 문구는 
 | 점선 목표선 (My best, #1) | 목표는 보이지만 그 선은 아무것도 움직이지 않습니다. |
 | 판이 끝날 때 나오는 문장 | "The rankings rise. The stone falls." / "One must imagine Sisyphus happy. — Albert Camus" |
 
+## 게임 요소
+1. shop
+   <img width="1079" height="2100" alt="Screenshot_20261128_210623_Pi Browser" src="https://github.com/user-attachments/assets/792cd116-134e-43df-8c6d-83eaa522b483" />
+<img width="1080" height="2102" alt="Screenshot_20261128_210628_Pi Browser" src="https://github.com/user-attachments/assets/50666f52-0451-4159-babb-32c4eeeb3131" />
+2. carve the mountain
+3. Hall of fame (rank)
 ## 구조와 디자인 패턴
 
 모두 Dart로 작성되어 있습니다. JavaScript는 Pi SDK를 불러오는 `<script>` 한 줄뿐이고, 호출은 `dart:js_interop`으로 합니다.
