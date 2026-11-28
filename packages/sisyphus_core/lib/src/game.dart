@@ -17,6 +17,9 @@ abstract final class Phys {
 
   /// Acceleration of the final tumble to the bottom (m/s²).
   static const double fallAcc = 28;
+
+  /// Fastest the stone can be steered across the path (m/s).
+  static const double maxSide = 8;
 }
 
 /// The server rejects any score that would need a faster climb than this.
@@ -74,11 +77,12 @@ class Rock {
     return width / 2 + tri * travel;
   }
 
-  /// The stone always sits in the middle of the path; only its height moves.
-  bool hits(double t, double ballY) {
+  /// Whether the stone at height [ballY] and across-path position [ballX]
+  /// (0..1, 0.5 is the middle) touches this rock at time [t].
+  bool hits(double t, double ballY, [double ballX = 0.5]) {
     if ((ballY - y).abs() >= ballRadius + rockThickness / 2) return false;
     final halfW = width / 2 + (ballRadius / laneWidth) * 0.85;
-    return (xAt(t) - 0.5).abs() < halfW;
+    return (xAt(t) - ballX).abs() < halfW;
   }
 }
 
@@ -138,7 +142,8 @@ class StepEvents {
   bool over = false;
 }
 
-/// One stone and the person pushing it. Moves strictly vertically.
+/// One stone and the person pushing it. Pushing moves it up the path;
+/// steering moves it across, never faster than [Phys.maxSide].
 class Climber {
   Climber(this.mountain);
 
@@ -151,13 +156,22 @@ class Climber {
   double t = 0; // time since the climb started (s)
   double rotation = 0; // for drawing the rolling stone
   double figureY = 0; // where Sisyphus stands; stays put when the stone slips
+  double x = 0.5; // across the path: 0 left wall, 1 right wall
+  double targetX = 0.5; // where the player is steering to
   ClimbState state = ClimbState.climbing;
+
+  /// How close to a wall the stone's centre can get.
+  static const double minX = ballRadius / laneWidth, maxX = 1 - minX;
 
   void reset() {
     y = v = max = t = rotation = figureY = 0;
+    x = targetX = 0.5;
     score = 0;
     state = ClimbState.climbing;
   }
+
+  /// Steers towards [x] across the path (kept off the walls).
+  void steerTo(double x) => targetX = x.clamp(minX, maxX);
 
   StepEvents step(double dt, {required bool pushing}) {
     final ev = StepEvents();
@@ -174,6 +188,8 @@ class Climber {
         ev.over = true;
       }
     } else {
+      final side = Phys.maxSide / laneWidth * dt;
+      x += (targetX - x).clamp(-side, side);
       v += (pushing ? Phys.pushAcc : -Phys.gravity) * dt;
       v = v.clamp(-Phys.maxDown, Phys.maxUp);
       y += v * dt;
@@ -185,7 +201,7 @@ class Climber {
         score = next;
       }
       figureY = y;
-      if (mountain.inRange(y - 1.5, y + 1.5).any((r) => r.hits(t, y))) {
+      if (mountain.inRange(y - 1.5, y + 1.5).any((r) => r.hits(t, y, x))) {
         state = ClimbState.falling;
         if (v > 0) v = 0;
         ev.crashed = true;

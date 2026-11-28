@@ -23,6 +23,9 @@ class Lane {
   final Climber climber;
   double cameraY = 0;
   bool pushing = false;
+
+  /// Held steering keys: -1 left, 1 right, 0 none.
+  int steering = 0;
   final popups = <Popup>[];
 }
 
@@ -55,12 +58,25 @@ class GameController extends ChangeNotifier with Subject<AppEvent> {
     if (lane < lanes.length) lanes[lane].pushing = pushing;
   }
 
+  /// Steers [lane]'s stone by [dx] path widths (a finger dragged sideways).
+  void steerBy(int lane, double dx) {
+    if (mode == GameMode.idle || lane >= lanes.length) return;
+    final c = lanes[lane].climber;
+    c.steerTo(c.targetX + dx);
+  }
+
+  /// Keyboard steering for [lane]: -1 left, 1 right, 0 stop.
+  void setSteering(int lane, int dir) {
+    if (lane < lanes.length) lanes[lane].steering = dir;
+  }
+
   void tick(double dt) {
     dt = min(dt, 0.05); // a backgrounded tab must not teleport the stone
     final playing = mode != GameMode.idle;
     var allDown = playing;
     for (final (i, lane) in lanes.indexed) {
       final c = lane.climber;
+      if (playing && lane.steering != 0) c.steerTo(c.x + lane.steering * 0.2);
       final ev = c.step(dt, pushing: playing && lane.pushing);
       for (var k = 0; k < ev.gained; k++) {
         lane.popups.add(Popup(c.score.toDouble()));

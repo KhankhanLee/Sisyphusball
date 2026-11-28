@@ -67,6 +67,9 @@ class _LanePainter {
   double get pathLeft => w * 0.04;
   double get pathRight => w * 0.96;
   double get centerX => w / 2;
+
+  /// Where the stone (and Sisyphus under it) is across the path.
+  double get ballX => climber.x * w;
   double get stoneRadius => ballRadius * scale;
   double get fontSize => max(10.0, scale * 0.32);
   Climber get climber => lane.climber;
@@ -211,7 +214,7 @@ class _LanePainter {
   /// Sisyphus, leaning into the stone from below. He stays where the stone
   /// slipped away from him.
   void _figure(Color color, Look? look, ui.Image? sprite) => paintPusher(canvas,
-      x: centerX,
+      x: ballX,
       top: toScreen(climber.figureY) + stoneRadius,
       s: scale * 0.5,
       look: look,
@@ -219,7 +222,7 @@ class _LanePainter {
       sprite: sprite);
 
   void _stone() {
-    final center = Offset(centerX, toScreen(climber.y));
+    final center = Offset(ballX, toScreen(climber.y));
     final r = stoneRadius;
     canvas.drawCircle(
       center,
@@ -244,7 +247,7 @@ class _LanePainter {
     for (final p in lane.popups) {
       _text(
         '+1',
-        Offset(centerX + stoneRadius * 1.8, toScreen(p.height) - p.age * 30 - 10),
+        Offset(ballX + stoneRadius * 1.8, toScreen(p.height) - p.age * 30 - 10),
         const Color(0xFFE8A95B).withValues(alpha: max(0, 1 - p.age)),
         size: max(14, scale * 0.5),
         bold: true,

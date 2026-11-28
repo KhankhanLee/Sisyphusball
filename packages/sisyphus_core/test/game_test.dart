@@ -80,6 +80,38 @@ void main() {
     expect(cautiousBotScore(Mountain()), greaterThanOrEqualTo(warmUpHeight));
   });
 
+  test('steering moves across the path no faster than maxSide, and not into the walls', () {
+    final c = Climber(_EmptyMountain())..steerTo(-5);
+    expect(c.targetX, Climber.minX);
+    c.step(0.1, pushing: true);
+    expect(0.5 - c.x, closeTo(Phys.maxSide / laneWidth * 0.1, 1e-9));
+    for (var i = 0; i < 120; i++) {
+      c.step(1 / 60, pushing: true);
+    }
+    expect(c.x, Climber.minX);
+    c.steerTo(5);
+    for (var i = 0; i < 240; i++) {
+      c.step(1 / 60, pushing: true);
+    }
+    expect(c.x, Climber.maxX);
+  });
+
+  test('a rock in the middle of the path can be passed by steering around it', () {
+    Climber climb({required bool steer}) {
+      final c = Climber(_PillarMountain(6));
+      if (steer) c.steerTo(0.1);
+      for (var i = 0; i < 300 && c.state == ClimbState.climbing; i++) {
+        c.step(1 / 60, pushing: true);
+      }
+      return c;
+    }
+
+    expect(climb(steer: false).state, isNot(ClimbState.climbing), reason: 'straight up hits it');
+    final dodged = climb(steer: true);
+    expect(dodged.state, ClimbState.climbing);
+    expect(dodged.y, greaterThan(8));
+  });
+
   test('tiers', () {
     expect(tierFor(0).name, 'Pebble at the Bottom');
     expect(tierFor(99).min, 50);
@@ -98,6 +130,16 @@ class _EmptyMountain extends Mountain {
 class _WallMountain extends Mountain {
   _WallMountain(double height) {
     rocks.add(Rock(y: height, width: 1, speed: 0, phase: 0, dir: 1));
+  }
+
+  @override
+  void ensure(double height) {}
+}
+
+/// A still rock, 30% of the path wide, right in the middle at [height].
+class _PillarMountain extends Mountain {
+  _PillarMountain(double height) {
+    rocks.add(Rock(y: height, width: 0.3, speed: 0, phase: 0.5, dir: 1));
   }
 
   @override
