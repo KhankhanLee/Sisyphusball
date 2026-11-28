@@ -6,7 +6,15 @@ import '../theme.dart';
 /// can be replaced by dropping in a new file with the same name.
 const _portraits = {'her-exile', 'her-starlight', 'her-lilac', 'her-herald', 'her-envoy'};
 
+/// Skins whose portrait moves: a looping animated WebP
+/// (`assets/portraits/{skin id}.webp`) shown instead of the still jpg.
+const _animated = {'her-herald', 'her-lilac'};
+
 bool hasPortrait(String skinId) => _portraits.contains(skinId);
+
+/// The asset shown for [skinId]'s portrait.
+String portraitAsset(String skinId) =>
+    'assets/portraits/$skinId.${_animated.contains(skinId) ? 'webp' : 'jpg'}';
 
 /// The large full-body picture (2:3) of a character in a skin, shown in the shop.
 class Portrait extends StatelessWidget {
@@ -28,7 +36,8 @@ class Portrait extends StatelessWidget {
         child: AnimatedSwitcher(
           duration: const Duration(milliseconds: 250),
           child: Image.asset(
-            'assets/portraits/$skinId.jpg',
+            portraitAsset(skinId),
+            gaplessPlayback: true,
             key: ValueKey(skinId),
             fit: BoxFit.cover,
             alignment: Alignment.topCenter,
