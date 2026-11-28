@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sisyphus_core/sisyphus_core.dart';
 
 import '../../copy.dart';
+import '../../game/sprites.dart';
 import '../../models/look_model.dart';
 import '../theme.dart';
 import '../widgets/game_button.dart';
@@ -14,6 +15,7 @@ class ShopScreen extends StatefulWidget {
   const ShopScreen({
     super.key,
     required this.looks,
+    this.sprites,
     required this.signedIn,
     required this.onWear,
     required this.onBuy,
@@ -21,6 +23,7 @@ class ShopScreen extends StatefulWidget {
   });
 
   final LookModel looks;
+  final Sprites? sprites;
   final bool signedIn;
   final void Function(Skin skin) onWear, onBuy;
   final VoidCallback onBack;
@@ -62,6 +65,7 @@ class _ShopScreenState extends State<ShopScreen> {
             child: _CharacterCard(
               character: c,
               look: looks.look.characterId == c.id ? looks.look : Look(c.id, defaultSkinOf(c.id).id),
+              sprites: widget.sprites,
               selected: _character == c.id,
               onTap: () => setState(() {
                 _character = c.id;
@@ -75,6 +79,7 @@ class _ShopScreenState extends State<ShopScreen> {
         _SkinRow(
           skin: skin,
           looks: looks,
+          sprites: widget.sprites,
           signedIn: widget.signedIn,
           onWear: () => widget.onWear(skin),
           onBuy: () => widget.onBuy(skin),
@@ -90,10 +95,12 @@ class _ShopScreenState extends State<ShopScreen> {
 }
 
 class _CharacterCard extends StatelessWidget {
-  const _CharacterCard({required this.character, required this.look, required this.selected, required this.onTap});
+  const _CharacterCard(
+      {required this.character, required this.look, required this.selected, required this.onTap, this.sprites});
 
   final Character character;
   final Look look;
+  final Sprites? sprites;
   final bool selected;
   final VoidCallback onTap;
 
@@ -111,7 +118,7 @@ class _CharacterCard extends StatelessWidget {
               border: Border.all(color: selected ? Palette.accent : Palette.hairline, width: selected ? 1.5 : 1),
             ),
             child: Column(children: [
-              PusherPreview(look),
+              PusherPreview(look, sprite: sprites?.of(look.skinId)),
               const SizedBox(height: 6),
               Text(character.name, style: const TextStyle(fontWeight: FontWeight.w800, color: Palette.ink)),
               Text(Copy.free, style: TextStyles.small),
@@ -125,6 +132,7 @@ class _SkinRow extends StatelessWidget {
   const _SkinRow({
     required this.skin,
     required this.looks,
+    this.sprites,
     required this.signedIn,
     required this.onWear,
     required this.onBuy,
@@ -133,6 +141,7 @@ class _SkinRow extends StatelessWidget {
 
   final Skin skin;
   final LookModel looks;
+  final Sprites? sprites;
   final bool signedIn;
   final VoidCallback onWear, onBuy, onPreview;
 
@@ -166,7 +175,7 @@ class _SkinRow extends StatelessWidget {
           border: Border.all(color: wearing ? Palette.accent : Palette.hairline),
         ),
         child: Row(children: [
-          PusherPreview(Look(skin.characterId, skin.id), size: const Size(52, 66)),
+          PusherPreview(Look(skin.characterId, skin.id), size: const Size(52, 66), sprite: sprites?.of(skin.id)),
           const SizedBox(width: 12),
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

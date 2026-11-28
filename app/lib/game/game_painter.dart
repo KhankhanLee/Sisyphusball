@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:ui' as ui show Image;
 
 import 'package:flutter/material.dart';
 import 'package:sisyphus_core/sisyphus_core.dart';
@@ -22,13 +23,13 @@ class GamePainter extends CustomPainter {
     final lanes = game.lanes;
     if (lanes.length == 1) {
       final w = min(size.width, 480.0);
-      _LanePainter(canvas, Rect.fromLTWH((size.width - w) / 2, 0, w, size.height), lanes.first)
-          .paint(
-              ghosts: overlay.ghosts,
-              markers: overlay.markers,
-              engravings: overlay.engravings,
-              look: overlay.look,
-              figure: const Color(0xFFEFE6D8));
+      _LanePainter(canvas, Rect.fromLTWH((size.width - w) / 2, 0, w, size.height), lanes.first).paint(
+          ghosts: overlay.ghosts,
+          markers: overlay.markers,
+          engravings: overlay.engravings,
+          look: overlay.look,
+          sprite: overlay.sprite,
+          figure: const Color(0xFFEFE6D8));
       return;
     }
     final w = size.width / lanes.length;
@@ -77,6 +78,7 @@ class _LanePainter {
     List<Marker> markers = const [],
     List<Engraving> engravings = const [],
     Look? look,
+    ui.Image? sprite,
     required Color figure,
   }) {
     canvas
@@ -91,7 +93,7 @@ class _LanePainter {
     _markers(markers);
     _rocks();
     _ghosts(ghosts);
-    _figure(figure, look);
+    _figure(figure, look, sprite);
     _stone();
     _popups();
     canvas.restore();
@@ -185,7 +187,8 @@ class _LanePainter {
       final sy = toScreen(rock.y);
       canvas
         ..drawRRect(
-            RRect.fromRectAndRadius(Rect.fromCenter(center: Offset(cx, sy), width: rw, height: rh), Radius.circular(rh / 2)),
+            RRect.fromRectAndRadius(
+                Rect.fromCenter(center: Offset(cx, sy), width: rw, height: rh), Radius.circular(rh / 2)),
             body)
         ..drawRRect(
             RRect.fromRectAndRadius(
@@ -207,8 +210,13 @@ class _LanePainter {
 
   /// Sisyphus, leaning into the stone from below. He stays where the stone
   /// slipped away from him.
-  void _figure(Color color, Look? look) =>
-      paintPusher(canvas, x: centerX, top: toScreen(climber.figureY) + stoneRadius, s: scale * 0.5, look: look, tint: color);
+  void _figure(Color color, Look? look, ui.Image? sprite) => paintPusher(canvas,
+      x: centerX,
+      top: toScreen(climber.figureY) + stoneRadius,
+      s: scale * 0.5,
+      look: look,
+      tint: color,
+      sprite: sprite);
 
   void _stone() {
     final center = Offset(centerX, toScreen(climber.y));

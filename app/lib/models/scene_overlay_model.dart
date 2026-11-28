@@ -1,6 +1,10 @@
 import '../copy.dart';
 import '../game/scene.dart';
+import 'dart:ui' as ui show Image;
+
 import 'package:sisyphus_core/sisyphus_core.dart' show Look;
+
+import '../game/sprites.dart';
 
 import 'carvings_model.dart';
 import 'look_model.dart';
@@ -12,16 +16,27 @@ import 'presence_model.dart';
 /// other climbers as ghosts, dashed lines at my best and at the #1, and the
 /// words people carved into the mountain.
 class SceneOverlayModel implements SceneOverlay {
-  SceneOverlayModel({required this.player, required this.leaderboard, required this.presence, required this.carvings, required this.looks});
+  SceneOverlayModel(
+      {required this.player,
+      required this.leaderboard,
+      required this.presence,
+      required this.carvings,
+      required this.looks,
+      Sprites? sprites})
+      : sprites = sprites ?? Sprites();
 
   final PlayerModel player;
   final LeaderboardModel leaderboard;
   final PresenceModel presence;
   final CarvingsModel carvings;
   final LookModel looks;
+  final Sprites sprites;
 
   @override
   Look get look => looks.look;
+
+  @override
+  ui.Image? get sprite => sprites.of(looks.look.skinId);
 
   @override
   List<Engraving> get engravings =>

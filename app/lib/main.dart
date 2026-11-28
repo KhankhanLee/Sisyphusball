@@ -62,7 +62,8 @@ class GameShell extends StatefulWidget {
 }
 
 class _GameShellState extends State<GameShell> {
-  late final AppServices s = widget.services ?? AppServices(askGuestName: () => showGuestNameDialog(context), diagnostics: diagnostics);
+  late final AppServices s =
+      widget.services ?? AppServices(askGuestName: () => showGuestNameDialog(context), diagnostics: diagnostics);
 
   bool _askingNickname = false;
 
@@ -163,7 +164,8 @@ class _GameShellState extends State<GameShell> {
       body: Stack(fit: StackFit.expand, children: [
         GameView(game: s.game, overlay: s.overlay),
         ListenableBuilder(
-          listenable: Listenable.merge([s.screens, s.player, s.leaderboard, s.presence, s.carvings, s.looks]),
+          listenable:
+              Listenable.merge([s.screens, s.player, s.leaderboard, s.presence, s.carvings, s.looks, s.sprites]),
           builder: (context, _) => _screen(),
         ),
       ]),
@@ -204,6 +206,7 @@ class _GameShellState extends State<GameShell> {
           ),
         Screen.shop => ShopScreen(
             looks: s.looks,
+            sprites: s.sprites,
             signedIn: s.player.signedIn,
             onWear: _wear,
             onBuy: _buy,

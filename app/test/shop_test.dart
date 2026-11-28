@@ -126,4 +126,10 @@ void main() {
     await tester.pump();
     expect(tester.widget<Portrait>(find.byType(Portrait)).skinId, 'her-lilac');
   });
+
+  test('Herald and Lilac portraits move; the rest are stills', () {
+    expect(portraitAsset('her-herald'), 'assets/portraits/her-herald.webp');
+    expect(portraitAsset('her-lilac'), 'assets/portraits/her-lilac.webp');
+    expect(portraitAsset('her-exile'), 'assets/portraits/her-exile.jpg');
+  });
 }
